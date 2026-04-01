@@ -14,11 +14,15 @@ export const dynamic = "force-dynamic";
  * }
  */
 export async function POST(request: NextRequest) {
-  // Verify the shared secret token
+  // Verify the shared secret token (fail-closed)
   const authHeader = request.headers.get("authorization");
   const expectedToken = process.env.GOOGLE_PUBSUB_VERIFICATION_TOKEN;
 
-  if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+  if (!expectedToken) {
+    return NextResponse.json({ error: "GOOGLE_PUBSUB_VERIFICATION_TOKEN not configured" }, { status: 503 });
+  }
+
+  if (authHeader !== "Bearer " + expectedToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

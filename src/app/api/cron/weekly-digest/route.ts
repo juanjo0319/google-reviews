@@ -16,7 +16,11 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== "Bearer " + cronSecret) {
+  if (!cronSecret) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+
+  if (authHeader !== "Bearer " + cronSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -58,7 +62,7 @@ export async function GET(request: NextRequest) {
     // Aggregate review data for this org
     const { data: weekReviews } = await supabase
       .from("reviews")
-      .select("star_rating, sentiment, comment")
+      .select("id, star_rating, sentiment, comment")
       .eq("organization_id", org.id)
       .gte("created_at", weekAgo.toISOString())
       .lte("created_at", now.toISOString());
@@ -97,16 +101,21 @@ export async function GET(request: NextRequest) {
         ? negativeReviews[0].comment!.slice(0, 150)
         : null;
 
-    // Response rate
-    const { count: respondedCount } = await supabase
-      .from("responses")
-      .select("id", { count: "exact", head: true })
-      .eq("organization_id", org.id)
-      .in("status", ["published", "approved", "pending_approval"]);
+    // Response rate — scoped to reviews from this week only
+    const weekReviewIds = reviews.map((r) => r.id);
+    let respondedCount = 0;
+    if (weekReviewIds.length > 0) {
+      const { count } = await supabase
+        .from("responses")
+        .select("id", { count: "exact", head: true })
+        .in("review_id", weekReviewIds)
+        .in("status", ["published", "approved", "pending_approval"]);
+      respondedCount = count ?? 0;
+    }
 
     const responseRate =
       totalNewReviews > 0
-        ? Math.round(((respondedCount ?? 0) / totalNewReviews) * 100) + "%"
+        ? Math.round((respondedCount / totalNewReviews) * 100) + "%"
         : "N/A";
 
     // Send to each user

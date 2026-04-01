@@ -12,11 +12,15 @@ export const dynamic = "force-dynamic";
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://yourapp.up.railway.app/api/cron/sync-reviews
  */
 export async function GET(request: NextRequest) {
-  // Verify cron secret
+  // Verify cron secret (fail-closed: reject if secret is missing or mismatched)
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+
+  if (authHeader !== "Bearer " + cronSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

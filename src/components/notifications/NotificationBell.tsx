@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Bell, Check, ExternalLink } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { Bell, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
@@ -111,16 +111,26 @@ export function NotificationBell({
     return "/dashboard/notifications";
   }
 
-  function formatTime(date: string): string {
-    const diff = Date.now() - new Date(date).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "just now";
-    if (mins < 60) return mins + "m ago";
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return hours + "h ago";
-    const days = Math.floor(hours / 24);
-    return days + "d ago";
-  }
+  // Compute "now" in state to keep render pure; refresh every minute
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const formatTime = useMemo(
+    () => (date: string) => {
+      const diff = now - new Date(date).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return "just now";
+      if (mins < 60) return mins + "m ago";
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + "h ago";
+      const days = Math.floor(hours / 24);
+      return days + "d ago";
+    },
+    [now]
+  );
 
   return (
     <div className="relative" ref={ref}>

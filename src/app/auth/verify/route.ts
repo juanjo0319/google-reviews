@@ -1,29 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import crypto from "crypto";
 
-// Helper: untyped handle for the next_auth schema.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function nextAuthSchema(supabase: ReturnType<typeof createAdminClient>): any {
   return supabase.schema("next_auth");
 }
 
 export async function GET(request: NextRequest) {
-  const token = request.nextUrl.searchParams.get("token");
+  const rawToken = request.nextUrl.searchParams.get("token");
 
-  if (!token) {
+  if (!rawToken) {
     return NextResponse.redirect(
       new URL("/auth/error?error=Verification", request.url)
     );
   }
 
+  // Hash the incoming token to match the stored hash
+  const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+
   const supabase = createAdminClient();
   const naSchema = nextAuthSchema(supabase);
 
-  // Look up the verification token
   const { data: verificationToken } = await naSchema
     .from("verification_tokens")
     .select("identifier, token, expires")
-    .eq("token", token)
+    .eq("token", hashedToken)
     .single();
 
   if (!verificationToken) {
@@ -32,20 +34,17 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Check expiry
   if (new Date(verificationToken.expires) < new Date()) {
-    // Clean up expired token
     await naSchema
       .from("verification_tokens")
       .delete()
-      .eq("token", token);
+      .eq("token", hashedToken);
 
     return NextResponse.redirect(
       new URL("/auth/error?error=Verification", request.url)
     );
   }
 
-  // Mark user as verified
   const { error: updateError } = await naSchema
     .from("users")
     .update({ emailVerified: new Date().toISOString() })
@@ -58,11 +57,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Delete the used token
   await naSchema
     .from("verification_tokens")
     .delete()
-    .eq("token", token);
+    .eq("token", hashedToken);
 
   return NextResponse.redirect(
     new URL("/login?verified=true", request.url)

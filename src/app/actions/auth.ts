@@ -84,15 +84,16 @@ export async function register(
     return { success: false, error: "Failed to create account. Please try again." };
   }
 
-  // Generate verification token
-  const token = crypto.randomUUID();
+  // Generate verification token (store hashed, send raw)
+  const rawToken = crypto.randomUUID();
+  const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
   const { error: tokenError } = await naSchema
     .from("verification_tokens")
     .insert({
       identifier: email,
-      token,
+      token: hashedToken,
       expires: expires.toISOString(),
     });
 
@@ -115,7 +116,7 @@ export async function register(
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
             <h2>Welcome to ReviewAI, ${name}!</h2>
             <p>Please verify your email address by clicking the link below:</p>
-            <a href="${baseUrl}/auth/verify?token=${token}"
+            <a href="${baseUrl}/auth/verify?token=${rawToken}"
                style="display: inline-block; background: #1a73e8; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
               Verify Email
             </a>
