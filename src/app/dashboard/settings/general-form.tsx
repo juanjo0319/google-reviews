@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Building2, Globe, Link2 } from "lucide-react";
+import { updateOrganization } from "@/app/actions/settings";
 
 export function GeneralSettingsForm({
   orgId,
@@ -16,13 +17,18 @@ export function GeneralSettingsForm({
   const [orgSlug, setOrgSlug] = useState(slug);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleSave() {
+    setError(null);
     startTransition(async () => {
-      // TODO: Wire to Server Action in Phase 4
-      console.log("Saving org settings:", { orgId, orgName, orgSlug });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      const result = await updateOrganization(orgId, orgName, orgSlug);
+      if (result.success) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        setError(result.error ?? "Failed to save");
+      }
     });
   }
 
@@ -38,6 +44,11 @@ export function GeneralSettingsForm({
         </p>
 
         <div className="space-y-4 max-w-lg">
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Organization Name

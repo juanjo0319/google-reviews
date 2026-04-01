@@ -180,13 +180,13 @@ export default function SignupPage() {
 
             <p className="mt-4 text-center text-xs text-slate-400">
               By signing up, you agree to our{" "}
-              <a href="#" className="text-primary hover:underline">
+              <Link href="/terms" className="text-primary hover:underline">
                 Terms
-              </a>{" "}
+              </Link>{" "}
               and{" "}
-              <a href="#" className="text-primary hover:underline">
+              <Link href="/privacy" className="text-primary hover:underline">
                 Privacy Policy
-              </a>
+              </Link>
               .
             </p>
           </div>
