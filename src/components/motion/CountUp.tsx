@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useInView, useMotionValue, useTransform, animate } from "motion/react";
-import * as m from "motion/react-client";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type CountUpProps = {
@@ -19,25 +17,46 @@ export function CountUp({
   className,
 }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
-  const motionValue = useMotionValue(0);
-  const rounded = useTransform(motionValue, (v) =>
-    Math.round(v).toLocaleString()
-  );
+  const [value, setValue] = useState(0);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
-    if (!isInView) return;
-    const controls = animate(motionValue, target, {
-      duration,
-      ease: "easeOut",
-    });
-    return controls.stop;
-  }, [isInView, motionValue, target, duration]);
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!started) return;
+    const steps = 60;
+    const stepDuration = (duration * 1000) / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current++;
+      const progress = current / steps;
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(eased * target));
+      if (current >= steps) {
+        setValue(target);
+        clearInterval(timer);
+      }
+    }, stepDuration);
+    return () => clearInterval(timer);
+  }, [started, target, duration]);
 
   return (
     <span ref={ref} className={cn(className)}>
-      <m.span>{rounded}</m.span>
-      {suffix}
+      {value.toLocaleString()}{suffix}
     </span>
   );
 }

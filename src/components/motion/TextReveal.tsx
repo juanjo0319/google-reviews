@@ -1,6 +1,6 @@
 "use client";
 
-import * as m from "motion/react-client";
+import { useRef, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 type TextRevealProps = {
@@ -9,39 +9,42 @@ type TextRevealProps = {
 };
 
 export function TextReveal({ text, className }: TextRevealProps) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const words = text.split(" ");
 
   return (
-    <m.p
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.5 }}
-      variants={{
-        hidden: {},
-        visible: {
-          transition: {
-            staggerChildren: 0.04,
-          },
-        },
-      }}
-      className={cn(className)}
-    >
+    <p ref={ref} className={cn(className)}>
       {words.map((word, i) => (
-        <m.span
-          key={`${word}-${i}`}
+        <span
+          key={i}
           className="inline-block mr-[0.25em]"
-          variants={{
-            hidden: { opacity: 0, y: 8 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { duration: 0.3, ease: "easeOut" },
-            },
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "none" : "translateY(6px)",
+            transition: `opacity 0.3s ease-out ${i * 0.04}s, transform 0.3s ease-out ${i * 0.04}s`,
           }}
         >
           {word}
-        </m.span>
+        </span>
       ))}
-    </m.p>
+    </p>
   );
 }
