@@ -3,53 +3,55 @@ import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-jakarta",
+  variable: "--font-heading",
+  weight: ["500", "600", "700", "800"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-body",
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://reviewai.app"
-  ),
+  metadataBase: new URL("https://revup.ai"),
   title: {
-    default: "ReviewAI — AI-Powered Google Review Management",
-    template: "%s | ReviewAI",
+    default: "RevUp.ai — AI-Powered Google Review Management",
+    template: "%s | RevUp.ai",
   },
   description:
-    "Connect your Google Business Profile and let AI read, analyze, and respond to every customer review automatically. Save hours weekly. Starting at $29/mo.",
+    "Connect your Google Business Profile and let AI read, analyze, and respond to every customer review. Save 10+ hours weekly. Starting at $29/mo.",
   keywords: [
     "AI review response",
     "Google review management",
     "automated review replies",
     "review response generator",
     "AI reputation management",
-    "google reviews",
     "review management software",
   ],
-  authors: [{ name: "ReviewAI" }],
-  creator: "ReviewAI",
+  authors: [{ name: "RevUp.ai" }],
+  creator: "RevUp.ai",
   openGraph: {
-    title: "ReviewAI — AI-Powered Google Review Management",
+    title: "RevUp.ai — AI-Powered Google Review Management",
     description:
-      "Automatically respond to every Google review with AI that matches your brand voice.",
+      "Connect your Google Business Profile and let AI read, analyze, and respond to every customer review. Save 10+ hours weekly. Starting at $29/mo.",
     url: "/",
-    siteName: "ReviewAI",
+    siteName: "RevUp.ai",
+    images: [{ url: "/og-default.png", width: 1200, height: 630 }],
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ReviewAI — AI-Powered Google Review Management",
+    title: "RevUp.ai — AI-Powered Google Review Management",
     description:
-      "Automatically respond to every Google review with AI.",
+      "Connect your Google Business Profile and let AI read, analyze, and respond to every customer review. Save 10+ hours weekly. Starting at $29/mo.",
+    images: ["/og-default.png"],
+    creator: "@revupai",
   },
   robots: {
     index: true,
@@ -63,6 +65,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: { canonical: "/" },
+  verification: { google: "your-search-console-verification-code" },
 };
 
 export default function RootLayout({
@@ -73,13 +76,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jakarta.variable} h-full antialiased`}
+      className={`${jakarta.variable} ${inter.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className="min-h-full flex flex-col">
         <a href="#main-content" className="skip-to-content">
           Skip to content
         </a>
-        <Providers>{children}</Providers>
+        <Providers>
+          {/* Header will be injected by marketing layout */}
+          {children}
+          {/* Footer will be injected by marketing layout */}
+        </Providers>
       </body>
     </html>
   );
