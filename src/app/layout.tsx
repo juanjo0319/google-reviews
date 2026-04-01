@@ -1,35 +1,68 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jakarta",
 });
 
 export const metadata: Metadata = {
-  title: "ReviewAI — AI-Powered Google Review Management",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://reviewai.app"
+  ),
+  title: {
+    default: "ReviewAI — AI-Powered Google Review Management",
+    template: "%s | ReviewAI",
+  },
   description:
-    "Read, analyze, and respond to your Google reviews instantly with AI. Save hours every week and never miss a customer review again.",
+    "Connect your Google Business Profile and let AI read, analyze, and respond to every customer review automatically. Save hours weekly. Starting at $29/mo.",
   keywords: [
+    "AI review response",
+    "Google review management",
+    "automated review replies",
+    "review response generator",
+    "AI reputation management",
     "google reviews",
-    "ai review response",
-    "review management",
-    "reputation management",
-    "ai powered reviews",
+    "review management software",
   ],
+  authors: [{ name: "ReviewAI" }],
+  creator: "ReviewAI",
   openGraph: {
     title: "ReviewAI — AI-Powered Google Review Management",
     description:
-      "Read, analyze, and respond to your Google reviews instantly with AI.",
+      "Automatically respond to every Google review with AI that matches your brand voice.",
+    url: "/",
+    siteName: "ReviewAI",
+    locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "ReviewAI — AI-Powered Google Review Management",
+    description:
+      "Automatically respond to every Google review with AI.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: { canonical: "/" },
 };
 
 export default function RootLayout({
@@ -40,9 +73,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${jakarta.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-sans">
+        <a href="#main-content" className="skip-to-content">
+          Skip to content
+        </a>
         <Providers>{children}</Providers>
       </body>
     </html>

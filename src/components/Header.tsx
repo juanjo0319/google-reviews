@@ -13,10 +13,10 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-cta text-white">
               <Star className="h-5 w-5" />
             </div>
-            <span className="text-xl font-bold text-slate-900">
+            <span className="text-xl font-bold text-slate-900 font-heading">
               Review<span className="text-primary">AI</span>
             </span>
           </Link>
@@ -41,6 +41,12 @@ export function Header() {
             >
               Pricing
             </a>
+            <a
+              href="#faq"
+              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+            >
+              FAQ
+            </a>
           </nav>
 
           {/* Desktop CTA */}
@@ -53,7 +59,7 @@ export function Header() {
             </Link>
             <Link
               href="/signup"
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors shadow-sm"
+              className="rounded-lg gradient-cta px-4 py-2 text-sm font-medium text-white transition-all shadow-sm hover:shadow-md"
             >
               Start Free Trial
             </Link>
@@ -65,7 +71,11 @@ export function Header() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </button>
         </div>
 
@@ -93,6 +103,13 @@ export function Header() {
             >
               Pricing
             </a>
+            <a
+              href="#faq"
+              className="block px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary"
+              onClick={() => setMobileOpen(false)}
+            >
+              FAQ
+            </a>
             <div className="flex flex-col gap-2 pt-2 border-t border-slate-100">
               <Link
                 href="/login"
@@ -102,7 +119,7 @@ export function Header() {
               </Link>
               <Link
                 href="/signup"
-                className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white hover:bg-primary-dark text-center"
+                className="rounded-lg gradient-cta px-3 py-2 text-sm font-medium text-white text-center"
               >
                 Start Free Trial
               </Link>
