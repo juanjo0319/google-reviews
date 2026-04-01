@@ -1,5 +1,5 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 export default function MarketingLayout({
   children,
@@ -9,7 +9,9 @@ export default function MarketingLayout({
   return (
     <>
       <Header />
-      <main id="main-content" className="flex-1">{children}</main>
+      <main id="main-content" className="min-h-screen">
+        {children}
+      </main>
       <Footer />
     </>
   );

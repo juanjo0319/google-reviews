@@ -2,129 +2,10 @@ import { Suspense } from "react";
 import { type ReviewCardData } from "@/components/dashboard/ReviewCard";
 import { ReviewFilters } from "@/components/dashboard/ReviewFilters";
 import { ReviewList } from "@/components/dashboard/ReviewList";
-import { MessageSquare } from "lucide-react";
-
-// Placeholder reviews — will be replaced with Supabase queries
-const placeholderReviews: ReviewCardData[] = [
-  {
-    id: "1",
-    reviewerName: "Sarah M.",
-    starRating: 5,
-    comment:
-      "Absolutely fantastic experience! The staff went above and beyond to make our visit special. Every dish was perfectly prepared and the ambiance was wonderful. Will definitely be coming back!",
-    sentiment: "positive",
-    responseStatus: "responded",
-    createdAt: "2 hours ago",
-    locationName: "Downtown Location",
-  },
-  {
-    id: "2",
-    reviewerName: "James T.",
-    starRating: 3,
-    comment:
-      "Decent food but the wait times are getting longer. Used to be much better about this.",
-    sentiment: "neutral",
-    responseStatus: "pending",
-    createdAt: "5 hours ago",
-    locationName: "Westside Branch",
-  },
-  {
-    id: "3",
-    reviewerName: "Emily R.",
-    starRating: 1,
-    comment:
-      "Terrible service. Wrong order twice and no one seemed to care about fixing it. Very disappointing for a place with such high ratings.",
-    sentiment: "negative",
-    responseStatus: "unresponded",
-    createdAt: "8 hours ago",
-    locationName: "Downtown Location",
-  },
-  {
-    id: "4",
-    reviewerName: "Michael B.",
-    starRating: 4,
-    comment:
-      "Great quality products. Delivery was a bit slow but everything arrived in perfect condition.",
-    sentiment: "positive",
-    responseStatus: "responded",
-    createdAt: "1 day ago",
-    locationName: "Online Store",
-  },
-  {
-    id: "5",
-    reviewerName: "Lisa K.",
-    starRating: 5,
-    comment:
-      "Best experience I've had in years! Will definitely be coming back and recommending to all my friends.",
-    sentiment: "positive",
-    responseStatus: "responded",
-    createdAt: "1 day ago",
-    locationName: "Downtown Location",
-  },
-  {
-    id: "6",
-    reviewerName: "David P.",
-    starRating: 2,
-    comment:
-      "Very disappointing. Quality has really gone downhill lately. The prices keep going up but the experience keeps getting worse.",
-    sentiment: "negative",
-    responseStatus: "unresponded",
-    createdAt: "2 days ago",
-    locationName: "Westside Branch",
-  },
-  {
-    id: "7",
-    reviewerName: "Anna W.",
-    starRating: 4,
-    comment: "Nice place, friendly staff. The desserts are outstanding.",
-    sentiment: "positive",
-    responseStatus: "responded",
-    createdAt: "2 days ago",
-    locationName: "Downtown Location",
-  },
-  {
-    id: "8",
-    reviewerName: "Robert H.",
-    starRating: 3,
-    comment:
-      "Average experience overall. Nothing particularly bad but nothing stood out either.",
-    sentiment: "neutral",
-    responseStatus: "unresponded",
-    createdAt: "3 days ago",
-    locationName: "Westside Branch",
-  },
-];
-
-function filterReviews(
-  reviews: ReviewCardData[],
-  searchParams: Record<string, string | undefined>
-): ReviewCardData[] {
-  let filtered = [...reviews];
-
-  const stars = searchParams.stars?.split(",").filter(Boolean).map(Number);
-  if (stars?.length) {
-    filtered = filtered.filter((r) => stars.includes(r.starRating));
-  }
-
-  if (searchParams.sentiment) {
-    filtered = filtered.filter((r) => r.sentiment === searchParams.sentiment);
-  }
-
-  if (searchParams.status) {
-    filtered = filtered.filter((r) => r.responseStatus === searchParams.status);
-  }
-
-  if (searchParams.q) {
-    const q = searchParams.q.toLowerCase();
-    filtered = filtered.filter(
-      (r) =>
-        r.comment.toLowerCase().includes(q) ||
-        r.reviewerName.toLowerCase().includes(q)
-    );
-  }
-
-  return filtered;
-}
+import { MessageSquare, ArrowUpRight } from "lucide-react";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getCurrentOrg } from "@/lib/auth/permissions";
+import Link from "next/link";
 
 function ReviewListSkeleton() {
   return (
@@ -155,28 +36,130 @@ function ReviewListSkeleton() {
   );
 }
 
+function formatTimeAgo(date: string): string {
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return mins + "m ago";
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + "h ago";
+  const days = Math.floor(hours / 24);
+  return days + "d ago";
+}
+
 async function ReviewsListWithData({
   searchParams,
 }: {
   searchParams: Record<string, string | undefined>;
 }) {
-  const reviews = filterReviews(placeholderReviews, searchParams);
+  const orgData = await getCurrentOrg();
+  if (!orgData) return null;
 
-  if (reviews.length === 0) {
+  const supabase = createAdminClient();
+
+  // Build query
+  let query = supabase
+    .from("reviews")
+    .select("id, reviewer_name, reviewer_photo_url, star_rating, comment, sentiment, review_created_at, created_at, locations(name)")
+    .eq("organization_id", orgData.orgId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  // Apply filters
+  if (searchParams.stars) {
+    const stars = searchParams.stars.split(",").filter(Boolean).map(Number);
+    if (stars.length > 0) {
+      query = query.in("star_rating", stars);
+    }
+  }
+
+  if (searchParams.sentiment) {
+    query = query.eq("sentiment", searchParams.sentiment);
+  }
+
+  if (searchParams.q) {
+    query = query.or(
+      "comment.ilike.%" + searchParams.q + "%,reviewer_name.ilike.%" + searchParams.q + "%"
+    );
+  }
+
+  const { data: reviews } = await query;
+
+  if (!reviews?.length) {
     return (
       <div className="rounded-2xl bg-white border border-slate-100 p-12 text-center">
         <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-slate-900 mb-1">
           No reviews found
         </h3>
-        <p className="text-sm text-slate-500">
-          Try adjusting your filters to find what you&apos;re looking for.
+        <p className="text-sm text-slate-500 mb-4">
+          {searchParams.stars || searchParams.sentiment || searchParams.q
+            ? "Try adjusting your filters."
+            : "Connect your Google Business Profile to start syncing reviews."}
         </p>
+        {!searchParams.stars && !searchParams.sentiment && !searchParams.q && (
+          <Link
+            href="/dashboard/settings"
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark"
+          >
+            Go to Settings <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
       </div>
     );
   }
 
-  return <ReviewList reviews={reviews} />;
+  // Get response status for all reviews
+  const reviewIds = reviews.map((r) => r.id);
+  const { data: responses } = await supabase
+    .from("responses")
+    .select("review_id, status")
+    .in("review_id", reviewIds);
+
+  const responseMap = new Map<string, string>();
+  for (const r of responses ?? []) {
+    responseMap.set(r.review_id, r.status);
+  }
+
+  // Map to ReviewCardData
+  const cardData: ReviewCardData[] = reviews.map((r) => {
+    const status = responseMap.get(r.id);
+    const responseStatus: "responded" | "pending" | "unresponded" = status
+      ? status === "published" ? "responded" : "pending"
+      : "unresponded";
+
+    return {
+      id: r.id,
+      reviewerName: r.reviewer_name ?? "Anonymous",
+      reviewerPhoto: r.reviewer_photo_url,
+      starRating: r.star_rating,
+      comment: r.comment ?? "(no text)",
+      sentiment: (r.sentiment as "positive" | "neutral" | "negative") ?? "neutral",
+      responseStatus,
+      createdAt: formatTimeAgo(r.review_created_at ?? r.created_at),
+      locationName: (r.locations as unknown as { name: string } | null)?.name ?? undefined,
+    };
+  });
+
+  // Client-side status filter (since it depends on responses join)
+  let filtered = cardData;
+  if (searchParams.status === "responded") {
+    filtered = filtered.filter((r) => r.responseStatus === "responded");
+  } else if (searchParams.status === "unresponded") {
+    filtered = filtered.filter((r) => r.responseStatus === "unresponded");
+  }
+
+  if (filtered.length === 0) {
+    return (
+      <div className="rounded-2xl bg-white border border-slate-100 p-12 text-center">
+        <MessageSquare className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-slate-900 mb-1">No reviews found</h3>
+        <p className="text-sm text-slate-500">Try adjusting your filters.</p>
+      </div>
+    );
+  }
+
+  return <ReviewList reviews={filtered} />;
 }
 
 export default async function ReviewsPage(props: {
