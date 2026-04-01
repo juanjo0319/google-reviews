@@ -2,12 +2,21 @@
 
 import Link from "next/link";
 import { Star, Check } from "lucide-react";
-import { useState } from "react";
+import { useActionState } from "react";
+import { signIn } from "next-auth/react";
+import { register, type RegisterResult } from "@/app/actions/auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function SignupPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [state, formAction, pending] = useActionState<RegisterResult | null, FormData>(register, null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state?.success) {
+      router.push("/login?verified=check-email");
+    }
+  }, [state?.success, router]);
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-surface">
@@ -54,10 +63,25 @@ export default function SignupPage() {
             <p className="text-slate-500">Create your free account</p>
           </div>
 
+          {/* Success message */}
+          {state?.success && (
+            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              Account created! Check your email for a verification link.
+            </div>
+          )}
+
+          {/* Error message */}
+          {state?.error && (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {state.error}
+            </div>
+          )}
+
           {/* Form Card */}
           <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-100">
             <button
               type="button"
+              onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
               className="w-full rounded-xl border border-slate-200 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 mb-6"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -92,13 +116,7 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                // TODO: Implement auth
-              }}
-              className="space-y-5"
-            >
+            <form action={formAction} className="space-y-5">
               <div>
                 <label
                   htmlFor="name"
@@ -108,10 +126,9 @@ export default function SignupPage() {
                 </label>
                 <input
                   id="name"
+                  name="name"
                   type="text"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
                   placeholder="John Doe"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 />
@@ -126,10 +143,9 @@ export default function SignupPage() {
                 </label>
                 <input
                   id="email"
+                  name="email"
                   type="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 />
@@ -144,11 +160,10 @@ export default function SignupPage() {
                 </label>
                 <input
                   id="password"
+                  name="password"
                   type="password"
                   required
                   minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 />
@@ -156,9 +171,10 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm"
+                disabled={pending}
+                className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Free Account
+                {pending ? "Creating account..." : "Create Free Account"}
               </button>
             </form>
 

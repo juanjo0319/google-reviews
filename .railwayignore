@@ -1,0 +1,21 @@
+# Test files
+tests/
+e2e/
+coverage/
+playwright-report/
+test-results/
+
+# Config files not needed at runtime
+vitest.config.mts
+playwright.config.ts
+.github/
+
+# Documentation
+*.md
+!README.md
+
+# Supabase local dev
+supabase/.temp/
+
+# OS files
+.DS_Store

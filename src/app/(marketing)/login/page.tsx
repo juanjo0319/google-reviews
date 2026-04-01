@@ -3,10 +3,48 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const verified = searchParams.get("verified");
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        if (result.error === "CredentialsSignin") {
+          setError("Invalid email or password, or email not verified.");
+        } else {
+          setError(result.error);
+        }
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-surface px-4 py-12">
@@ -24,15 +62,23 @@ export default function LoginPage() {
           <p className="text-slate-500">Welcome back</p>
         </div>
 
+        {/* Success banner */}
+        {verified && (
+          <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            Email verified successfully! You can now sign in.
+          </div>
+        )}
+
+        {/* Error banner */}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
         {/* Form Card */}
         <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-100">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              // TODO: Implement auth
-            }}
-            className="space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
                 htmlFor="email"
@@ -42,6 +88,7 @@ export default function LoginPage() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 required
                 value={email}
@@ -68,6 +115,7 @@ export default function LoginPage() {
               </div>
               <input
                 id="password"
+                name="password"
                 type="password"
                 required
                 value={password}
@@ -79,9 +127,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm"
+              disabled={loading}
+              className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Log In
+              {loading ? "Signing in..." : "Log In"}
             </button>
           </form>
 
@@ -90,12 +139,15 @@ export default function LoginPage() {
               <div className="w-full border-t border-slate-100" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-slate-400">or continue with</span>
+              <span className="bg-white px-3 text-slate-400">
+                or continue with
+              </span>
             </div>
           </div>
 
           <button
             type="button"
+            onClick={() => signIn("google", { callbackUrl })}
             className="mt-4 w-full rounded-xl border border-slate-200 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -131,5 +183,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
