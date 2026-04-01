@@ -31,17 +31,6 @@ export async function ensureOrganization() {
     .single();
 
   if (existing) {
-    // Set active org cookie if not set
-    const cookieStore = await cookies();
-    if (!cookieStore.get("active_org_id")) {
-      cookieStore.set("active_org_id", existing.organization_id, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 365, // 1 year
-      });
-    }
     return existing.organization_id;
   }
 
@@ -82,16 +71,6 @@ export async function ensureOrganization() {
   await supabase.from("notification_preferences").insert({
     user_id: session.user.id,
     organization_id: org.id,
-  });
-
-  // Set active org cookie
-  const cookieStore = await cookies();
-  cookieStore.set("active_org_id", org.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
   });
 
   return org.id;
