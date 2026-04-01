@@ -1,21 +1,11 @@
-# Test files
+.git
+node_modules
+.env.local
+.env
 tests/
 e2e/
-coverage/
-playwright-report/
-test-results/
-
-# Config files not needed at runtime
-vitest.config.mts
-playwright.config.ts
+*.test.*
+*.spec.*
 .github/
-
-# Documentation
-*.md
-!README.md
-
-# Supabase local dev
-supabase/.temp/
-
-# OS files
-.DS_Store
+docs/
+README.md

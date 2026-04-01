@@ -1,5 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { CookieConsent } from "@/components/analytics/CookieConsent";
 
 export default function MarketingLayout({
   children,
@@ -13,6 +15,8 @@ export default function MarketingLayout({
         {children}
       </main>
       <Footer />
+      <GoogleAnalytics />
+      <CookieConsent />
     </>
   );
 }
