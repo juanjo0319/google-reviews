@@ -1,34 +1,37 @@
 import { Building2, MessageSquare, Zap, Clock } from "lucide-react";
 import { CountUp } from "@/components/motion";
+import { getTranslations } from "next-intl/server";
 
-const STATS = [
-  {
-    icon: Building2,
-    target: 500,
-    suffix: "+",
-    label: "Businesses Trust RevUp.ai",
-  },
-  {
-    icon: MessageSquare,
-    target: 50000,
-    suffix: "+",
-    label: "Reviews Managed Monthly",
-  },
-  {
-    icon: Zap,
-    target: 4.2,
-    suffix: "s",
-    label: "Avg. AI Response Time",
-  },
-  {
-    icon: Clock,
-    target: 10,
-    suffix: "+ hrs",
-    label: "Saved Per Week, Per Business",
-  },
-];
+export async function StatsBanner() {
+  const t = await getTranslations("marketing.stats");
 
-export function StatsBanner() {
+  const STATS = [
+    {
+      icon: Building2,
+      target: 500,
+      suffix: "+",
+      label: t("businessesTrust"),
+    },
+    {
+      icon: MessageSquare,
+      target: 50000,
+      suffix: "+",
+      label: t("reviewsManaged"),
+    },
+    {
+      icon: Zap,
+      target: 4.2,
+      suffix: "s",
+      label: t("avgResponseTime"),
+    },
+    {
+      icon: Clock,
+      target: 10,
+      suffix: "+ hrs",
+      label: t("savedPerWeek"),
+    },
+  ];
+
   return (
     <section className="relative bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 py-16 md:py-20 overflow-hidden">
       {/* Subtle dot decoration */}

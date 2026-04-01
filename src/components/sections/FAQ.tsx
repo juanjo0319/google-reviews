@@ -8,49 +8,7 @@ import { cn } from "@/lib/utils";
 import { SectionWrapper } from "@/components/ui/SectionWrapper";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { JsonLd } from "@/components/ui/JsonLd";
-
-const FAQ_ITEMS = [
-  {
-    question: "How does RevUp.ai generate review responses?",
-    answer:
-      "RevUp.ai uses Claude AI by Anthropic — one of the world's most capable AI models — to analyze each review's content, sentiment, and context. It then generates a response that matches your configured brand voice, tone, and style preferences. Every response is drafted, never auto-published — you always have final approval.",
-  },
-  {
-    question: "Is it safe to connect my Google Business Profile?",
-    answer:
-      "Absolutely. We use Google's official OAuth 2.0 authentication — the same secure method used by Google's own apps. RevUp.ai only accesses your review data and the ability to post replies. We never access your email, contacts, or any other Google data. You can revoke access at any time from your Google Account settings.",
-  },
-  {
-    question: "Can I edit AI-generated responses before publishing?",
-    answer:
-      'Yes, always. Every AI response starts as a draft. You can edit it, regenerate it with different instructions, or write your own response from scratch. Nothing is ever published to Google without your explicit approval.',
-  },
-  {
-    question: "What happens if I go over my monthly response limit?",
-    answer:
-      "You'll receive a notification when you're approaching your limit. Once reached, you can still view and manage reviews, but new AI responses will be paused until your next billing cycle — or you can upgrade your plan instantly for immediate access to more responses.",
-  },
-  {
-    question: "Do you support multiple Google Business locations?",
-    answer:
-      "Yes! The Pro plan supports up to 10 locations, and Enterprise offers unlimited locations. Each location can have its own brand voice settings, notification preferences, and team permissions. You manage everything from one unified dashboard.",
-  },
-  {
-    question: "How quickly does RevUp.ai detect new reviews?",
-    answer:
-      "New reviews are detected within minutes using Google's real-time notification system. You'll receive an alert immediately, and an AI-drafted response will be ready for your approval by the time you open the dashboard.",
-  },
-  {
-    question: "Can I customize the AI's writing style?",
-    answer:
-      "Extensively. You control the tone (professional, casual, warm, etc.), formality level, whether to use emoji, preferred phrases, phrases to avoid, response length, and even provide example responses for the AI to learn from. The more you customize, the more the AI sounds like you.",
-  },
-  {
-    question: "Is there a free trial?",
-    answer:
-      "Yes — every plan includes a 14-day free trial with full access to all features. No credit card required to start. Cancel anytime during the trial at no cost.",
-  },
-];
+import { useTranslations } from "next-intl";
 
 function AccordionItem({
   question,
@@ -105,7 +63,19 @@ function AccordionItem({
 }
 
 export function FAQ() {
+  const t = useTranslations("marketing.faq");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const FAQ_ITEMS = [
+    { question: t("q1"), answer: t("a1") },
+    { question: t("q2"), answer: t("a2") },
+    { question: t("q3"), answer: t("a3") },
+    { question: t("q4"), answer: t("a4") },
+    { question: t("q5"), answer: t("a5") },
+    { question: t("q6"), answer: t("a6") },
+    { question: t("q7"), answer: t("a7") },
+    { question: t("q8"), answer: t("a8") },
+  ];
 
   // Split into two columns
   const mid = Math.ceil(FAQ_ITEMS.length / 2);
@@ -130,9 +100,9 @@ export function FAQ() {
       />
 
       <SectionHeading
-        eyebrow="FAQ"
-        heading="Frequently Asked Questions"
-        description="Everything you need to know about RevUp.ai."
+        eyebrow={t("eyebrow")}
+        heading={t("heading")}
+        description={t("description")}
       />
 
       <div className="grid md:grid-cols-2 gap-x-12 max-w-5xl mx-auto">
@@ -164,9 +134,9 @@ export function FAQ() {
       </div>
 
       <div className="mt-12 text-center text-sm text-neutral-500">
-        Still have questions?{" "}
+        {t("stillHaveQuestions")}{" "}
         <a href="/contact" className="text-primary font-medium hover:underline">
-          Contact Us
+          {t("contactUs")}
         </a>
       </div>
     </SectionWrapper>

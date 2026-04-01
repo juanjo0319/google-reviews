@@ -15,6 +15,8 @@ export interface SentimentResult {
 
 const SYSTEM_PROMPT = `You are a review sentiment analysis expert for businesses. Analyze the given Google review and its star rating to determine sentiment, themes, and urgency.
 
+The review may be written in any language. Detect the language automatically and analyze accordingly. Return key_themes, key_positives, and key_negatives in the same language as the review.
+
 Consider:
 - The star rating as a strong signal (1-2 = likely negative, 3 = neutral, 4-5 = likely positive)
 - But override based on text content (e.g., a 4-star review with mostly complaints should be neutral)

@@ -3,12 +3,14 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const starOptions = [1, 2, 3, 4, 5];
 const sentimentOptions = ["positive", "neutral", "negative"] as const;
 const statusOptions = ["responded", "unresponded"] as const;
 
 export function ReviewFilters() {
+  const t = useTranslations("dashboard.reviews");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -54,7 +56,7 @@ export function ReviewFilters() {
     <div className="rounded-2xl bg-white border border-slate-100 p-4">
       <div className="flex items-center gap-2 mb-4">
         <SlidersHorizontal className="h-4 w-4 text-slate-500" />
-        <span className="text-sm font-medium text-slate-700">Filters</span>
+        <span className="text-sm font-medium text-slate-700">{t("filters")}</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
@@ -63,7 +65,7 @@ export function ReviewFilters() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search reviews..."
+            placeholder={t("searchReviews")}
             defaultValue={searchParams.get("q") ?? ""}
             onChange={(e) => updateParam("q", e.target.value || null)}
             className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none"
@@ -72,7 +74,7 @@ export function ReviewFilters() {
 
         {/* Star rating */}
         <div className="flex items-center gap-1">
-          <span className="text-xs text-slate-500 mr-1">Rating:</span>
+          <span className="text-xs text-slate-500 mr-1">{t("rating")}</span>
           {starOptions.map((star) => (
             <button
               key={star}
@@ -91,7 +93,7 @@ export function ReviewFilters() {
 
         {/* Sentiment */}
         <div className="flex items-center gap-1">
-          <span className="text-xs text-slate-500 mr-1">Sentiment:</span>
+          <span className="text-xs text-slate-500 mr-1">{t("sentiment")}</span>
           {sentimentOptions.map((s) => {
             const colors = {
               positive: "bg-green-100 text-green-700",
@@ -110,7 +112,7 @@ export function ReviewFilters() {
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
-                {s}
+                {t(s)}
               </button>
             );
           })}
@@ -118,7 +120,7 @@ export function ReviewFilters() {
 
         {/* Status */}
         <div className="flex items-center gap-1">
-          <span className="text-xs text-slate-500 mr-1">Status:</span>
+          <span className="text-xs text-slate-500 mr-1">{t("status")}</span>
           {statusOptions.map((s) => (
             <button
               key={s}
@@ -131,7 +133,7 @@ export function ReviewFilters() {
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
-              {s}
+              {t(s)}
             </button>
           ))}
         </div>

@@ -8,25 +8,8 @@ import * as m from "motion/react-client";
 import { Menu, X, ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-
-const NAV_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Blog", href: "/blog" },
-  {
-    label: "Compare",
-    href: "/compare",
-    children: [
-      { label: "vs Birdeye", href: "/compare/revup-vs-birdeye" },
-      { label: "vs Podium", href: "/compare/revup-vs-podium" },
-      { label: "vs ReviewTrackers", href: "/compare/revup-vs-reviewtrackers" },
-      {
-        label: "vs Reputation.com",
-        href: "/compare/revup-vs-reputation-com",
-      },
-    ],
-  },
-];
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslations } from "next-intl";
 
 function Logo() {
   return (
@@ -71,11 +54,22 @@ function DropdownMenu({
 }
 
 export function Header() {
+  const t = useTranslations("common.nav");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+
+  const NAV_LINKS: {
+    label: string;
+    href: string;
+    children?: { label: string; href: string }[];
+  }[] = [
+    { label: t("features"), href: "#features" },
+    { label: t("pricing"), href: "#pricing" },
+    { label: t("blog"), href: "/blog" },
+  ];
 
   // Scroll listener — throttled via rAF
   useEffect(() => {
@@ -208,14 +202,15 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/login"
               className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 transition-colors"
             >
-              Login
+              {t("login")}
             </Link>
             <Button href="/signup" size="sm">
-              Start Free Trial
+              {t("startFreeTrial")}
             </Button>
           </div>
 
@@ -223,7 +218,7 @@ export function Header() {
           <button
             className="md:hidden p-2 text-neutral-600"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
           >
             {mobileOpen ? (
               <X className="h-5 w-5" />
@@ -278,19 +273,22 @@ export function Header() {
               )}
 
               <div className="pt-6 mt-4 border-t border-neutral-100 space-y-3">
+                <div className="flex justify-center">
+                  <LanguageSwitcher />
+                </div>
                 <Link
                   href="/login"
                   className="block px-3 py-2 text-base font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg text-center"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Login
+                  {t("login")}
                 </Link>
                 <Button
                   href="/signup"
                   className="w-full"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Start Free Trial
+                  {t("startFreeTrial")}
                 </Button>
               </div>
             </nav>

@@ -3,59 +3,56 @@ import { SectionWrapper } from "@/components/ui/SectionWrapper";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { StaggerContainer, StaggerItem } from "@/components/motion";
+import { getTranslations } from "next-intl/server";
 
-const FEATURES = [
-  {
-    icon: Sparkles,
-    title: "Smart AI Responses",
-    description:
-      "Powered by Claude AI, responses match your brand voice — professional, friendly, or whatever tone you set.",
-    accent: "bg-primary/10 text-primary",
-  },
-  {
-    icon: BarChart3,
-    title: "Sentiment Analysis",
-    description:
-      "Every review scored for sentiment with key themes extracted. Know what customers love and what needs fixing.",
-    accent: "bg-success/10 text-success",
-  },
-  {
-    icon: Bell,
-    title: "Instant Notifications",
-    description:
-      "Get alerted the moment a new review comes in. Negative reviews trigger urgent alerts so you respond fast.",
-    accent: "bg-warning/10 text-warning",
-  },
-  {
-    icon: Settings,
-    title: "Brand Voice Control",
-    description:
-      "Set your tone, preferred phrases, and response style. Every AI response sounds unmistakably you.",
-    accent: "bg-accent/10 text-accent",
-  },
-  {
-    icon: Clock,
-    title: "Save 10+ Hours Weekly",
-    description:
-      "Businesses with 50+ monthly reviews save an average of 10 hours per week. That's time back for what matters.",
-    accent: "bg-primary/10 text-primary",
-  },
-  {
-    icon: MapPin,
-    title: "Multi-Location Support",
-    description:
-      "Manage reviews across all your locations from one dashboard. Set different brand voices per location.",
-    accent: "bg-accent/10 text-accent",
-  },
-];
+export async function Features() {
+  const t = await getTranslations("marketing.features");
 
-export function Features() {
+  const FEATURES = [
+    {
+      icon: Sparkles,
+      title: t("smartAiResponses"),
+      description: t("smartAiResponsesDesc"),
+      accent: "bg-primary/10 text-primary",
+    },
+    {
+      icon: BarChart3,
+      title: t("sentimentAnalysis"),
+      description: t("sentimentAnalysisDesc"),
+      accent: "bg-success/10 text-success",
+    },
+    {
+      icon: Bell,
+      title: t("instantNotifications"),
+      description: t("instantNotificationsDesc"),
+      accent: "bg-warning/10 text-warning",
+    },
+    {
+      icon: Settings,
+      title: t("brandVoiceControl"),
+      description: t("brandVoiceControlDesc"),
+      accent: "bg-accent/10 text-accent",
+    },
+    {
+      icon: Clock,
+      title: t("saveTime"),
+      description: t("saveTimeDesc"),
+      accent: "bg-primary/10 text-primary",
+    },
+    {
+      icon: MapPin,
+      title: t("multiLocation"),
+      description: t("multiLocationDesc"),
+      accent: "bg-accent/10 text-accent",
+    },
+  ];
+
   return (
     <SectionWrapper id="features">
       <SectionHeading
-        eyebrow="Features"
-        heading="Everything You Need to Master Your Reviews"
-        description="One platform to monitor, analyze, and respond to every Google review with AI precision."
+        eyebrow={t("eyebrow")}
+        heading={t("heading")}
+        description={t("description")}
       />
 
       <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -83,7 +80,7 @@ export function Features() {
 
       <div className="mt-12 text-center">
         <Button href="/features" variant="secondary">
-          Explore All Features
+          {t("exploreAll")}
         </Button>
       </div>
     </SectionWrapper>

@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
   // Build system prompt
   let systemPrompt =
-    "You are an expert at crafting professional, empathetic responses to Google reviews. Write ONLY the response text.";
+    "You are an expert at crafting professional, empathetic responses to Google reviews. Write ONLY the response text. IMPORTANT: Respond in the same language as the review. If the review is in Spanish, respond in Spanish. If in English, respond in English. Match the language automatically.";
 
   if (brandVoice) {
     const bvParts = [

@@ -178,6 +178,7 @@ ${examples.map((ex: { review: string; response: string }, i: number) => `  <exam
   - Never fabricate facts or make promises you can't keep
   - Keep the response within the specified length
   - Match the formality and tone settings exactly
+  - IMPORTANT: Respond in the same language as the review. If the review is in Spanish, respond in Spanish. If in English, respond in English. Match the language automatically.
 </response_guidelines>`;
 
   return prompt;

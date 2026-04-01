@@ -1,8 +1,11 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FadeIn } from "@/components/motion";
+import { getTranslations } from "next-intl/server";
 
-export function FinalCTA() {
+export async function FinalCTA() {
+  const t = await getTranslations("marketing.finalCta");
+
   return (
     <section className="px-[var(--section-padding-x)] py-20 md:py-28 mb-20">
       <div className="mx-auto max-w-7xl">
@@ -23,14 +26,13 @@ export function FinalCTA() {
           <div className="relative">
             <FadeIn>
               <h2 className="font-heading text-3xl md:text-5xl font-bold text-white">
-                Ready to Transform Your Review Management?
+                {t("heading")}
               </h2>
             </FadeIn>
 
             <FadeIn delay={0.1}>
               <p className="text-lg text-white/80 max-w-2xl mx-auto mt-4">
-                Join 500+ businesses that save 10+ hours every week with
-                AI-powered review responses.
+                {t("subtitle")}
               </p>
             </FadeIn>
 
@@ -42,7 +44,7 @@ export function FinalCTA() {
                   size="lg"
                   className="bg-white text-primary hover:bg-white/90 border-0"
                 >
-                  Start Your Free Trial
+                  {t("startTrial")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
                 <Button
@@ -51,14 +53,14 @@ export function FinalCTA() {
                   size="lg"
                   className="border-white/30 text-white hover:bg-white/10"
                 >
-                  Book a Demo
+                  {t("bookDemo")}
                 </Button>
               </div>
             </FadeIn>
 
             <FadeIn delay={0.3}>
               <p className="mt-4 text-sm text-white/60">
-                No credit card required &middot; Cancel anytime
+                {t("noCreditCard")} &middot; {t("cancelAnytime")}
               </p>
             </FadeIn>
           </div>

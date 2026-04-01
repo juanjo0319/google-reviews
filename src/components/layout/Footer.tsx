@@ -1,40 +1,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { NewsletterForm } from "./NewsletterForm";
-
-const COLUMNS = [
-  {
-    title: "Product",
-    links: [
-      { label: "Features", href: "/features" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Integrations", href: "/integrations" },
-      { label: "Changelog", href: "/changelog" },
-      { label: "API", href: "#", badge: "Coming Soon" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Blog", href: "/blog" },
-      { label: "Case Studies", href: "/resources/case-studies" },
-      { label: "Templates", href: "/templates" },
-      { label: "Response Generator", href: "/tools/review-response-generator" },
-      { label: "FAQ", href: "/faq" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Contact", href: "/contact" },
-      { label: "Careers", href: "#" },
-      { label: "Security", href: "/security" },
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms of Service", href: "/terms" },
-    ],
-  },
-];
+import { getTranslations } from "next-intl/server";
 
 function TwitterIcon({ className }: { className?: string }) {
   return (
@@ -78,7 +45,44 @@ const SOCIAL_LINKS = [
   },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("common.footer");
+  const navT = await getTranslations("common.nav");
+
+  const COLUMNS = [
+    {
+      title: t("product"),
+      links: [
+        { label: navT("features"), href: "/features" },
+        { label: navT("pricing"), href: "/pricing" },
+        { label: t("integrations"), href: "/integrations" },
+        { label: t("changelog"), href: "/changelog" },
+        { label: t("api"), href: "#", badge: t("comingSoon") },
+      ],
+    },
+    {
+      title: t("resources"),
+      links: [
+        { label: navT("blog"), href: "/blog" },
+        { label: t("caseStudies"), href: "/resources/case-studies" },
+        { label: t("templates"), href: "/templates" },
+        { label: t("responseGenerator"), href: "/tools/review-response-generator" },
+        { label: navT("faq"), href: "/faq" },
+      ],
+    },
+    {
+      title: t("company"),
+      links: [
+        { label: t("about"), href: "/about" },
+        { label: t("contact"), href: "/contact" },
+        { label: t("careers"), href: "#" },
+        { label: t("security"), href: "/security" },
+        { label: t("privacyPolicy"), href: "/privacy" },
+        { label: t("termsOfService"), href: "/terms" },
+      ],
+    },
+  ];
+
   return (
     <footer className="bg-neutral-950 text-neutral-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
@@ -95,7 +99,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm text-neutral-400 leading-relaxed mb-6">
-              AI-powered review management for growing businesses.
+              {t("description")}
             </p>
             <div className="flex items-center gap-3">
               {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
@@ -145,10 +149,10 @@ export function Footer() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
               <h4 className="text-sm font-semibold text-white mb-1">
-                Stay in the loop
+                {t("stayInTheLoop")}
               </h4>
               <p className="text-xs text-neutral-500">
-                No spam. Unsubscribe anytime.
+                {t("noSpam")}
               </p>
             </div>
             <NewsletterForm />
@@ -158,17 +162,17 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-8 pt-8 border-t border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-neutral-500">
-            &copy; {new Date().getFullYear()} RevUp.ai. All rights reserved.
+            &copy; {new Date().getFullYear()} RevUp.ai. {t("allRightsReserved")}
           </p>
           <div className="flex items-center gap-4 text-sm text-neutral-500">
             <a href="#" className="hover:text-white transition-colors">
-              Status
+              {t("status")}
             </a>
             <Link href="/privacy" className="hover:text-white transition-colors">
-              Privacy
+              {t("privacy")}
             </Link>
             <Link href="/terms" className="hover:text-white transition-colors">
-              Terms
+              {t("terms")}
             </Link>
           </div>
         </div>

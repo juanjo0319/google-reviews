@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Building2, Globe, Link2 } from "lucide-react";
 import { updateOrganization } from "@/app/actions/settings";
+import { useTranslations } from "next-intl";
 
 export function GeneralSettingsForm({
   orgId,
@@ -13,6 +14,7 @@ export function GeneralSettingsForm({
   name: string;
   slug: string;
 }) {
+  const t = useTranslations("dashboard.settings");
   const [orgName, setOrgName] = useState(name);
   const [orgSlug, setOrgSlug] = useState(slug);
   const [isPending, startTransition] = useTransition();
@@ -37,10 +39,10 @@ export function GeneralSettingsForm({
       {/* Organization details */}
       <div className="rounded-2xl bg-white border border-slate-100 p-6">
         <h2 className="text-lg font-semibold text-slate-900 mb-1">
-          Organization Details
+          {t("orgDetails")}
         </h2>
         <p className="text-sm text-slate-500 mb-6">
-          Basic information about your organization
+          {t("orgDetailsDesc")}
         </p>
 
         <div className="space-y-4 max-w-lg">
@@ -51,7 +53,7 @@ export function GeneralSettingsForm({
           )}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Organization Name
+              {t("orgName")}
             </label>
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -66,7 +68,7 @@ export function GeneralSettingsForm({
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Slug
+              {t("slug")}
             </label>
             <div className="relative">
               <Link2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -87,7 +89,7 @@ export function GeneralSettingsForm({
             disabled={isPending}
             className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-50"
           >
-            {isPending ? "Saving..." : saved ? "Saved!" : "Save Changes"}
+            {isPending ? t("saving") : saved ? t("saved") : t("saveChanges")}
           </button>
         </div>
       </div>
@@ -95,25 +97,25 @@ export function GeneralSettingsForm({
       {/* Connected accounts */}
       <div className="rounded-2xl bg-white border border-slate-100 p-6">
         <h2 className="text-lg font-semibold text-slate-900 mb-1">
-          Connected Google Accounts
+          {t("connectedGoogleAccounts")}
         </h2>
         <p className="text-sm text-slate-500 mb-6">
-          Google Business Profile accounts linked to this organization
+          {t("connectedGoogleAccountsDesc")}
         </p>
 
         <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
           <Globe className="h-10 w-10 text-slate-300 mx-auto mb-3" />
           <p className="text-sm font-medium text-slate-700 mb-1">
-            No accounts connected
+            {t("noAccountsConnected")}
           </p>
           <p className="text-xs text-slate-500 mb-4">
-            Connect your Google Business Profile to start syncing reviews
+            {t("connectToStartSyncing")}
           </p>
           <a
             href="/api/google/connect"
             className="inline-flex rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
           >
-            Connect Google Account
+            {t("connectGoogleAccount")}
           </a>
         </div>
       </div>

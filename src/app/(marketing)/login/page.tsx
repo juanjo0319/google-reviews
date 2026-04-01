@@ -6,8 +6,10 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useTranslations } from "next-intl";
 
 function LoginForm() {
+  const t = useTranslations("auth.login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -32,7 +34,7 @@ function LoginForm() {
 
       if (result?.error) {
         if (result.error === "CredentialsSignin") {
-          setError("Invalid email or password, or email not verified.");
+          setError(t("invalidCredentials"));
         } else {
           setError(result.error);
         }
@@ -41,7 +43,7 @@ function LoginForm() {
         router.refresh();
       }
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("somethingWentWrong"));
     } finally {
       setLoading(false);
     }
@@ -60,20 +62,20 @@ function LoginForm() {
               Review<span className="text-primary">AI</span>
             </span>
           </Link>
-          <p className="text-slate-500">Welcome back</p>
+          <p className="text-slate-500">{t("welcomeBack")}</p>
         </div>
 
         {/* Success banner */}
         {verified && (
           <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-            Email verified successfully! You can now sign in.
+            {t("emailVerified")}
           </div>
         )}
 
         {/* Forgot password banner */}
         {showForgotMsg && (
           <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-            To reset your password, please contact support at{" "}
+            {t("forgotPasswordMsg")}{" "}
             <a href="mailto:support@reviewai.app" className="font-semibold underline">
               support@reviewai.app
             </a>
@@ -95,7 +97,7 @@ function LoginForm() {
                 htmlFor="email"
                 className="block text-sm font-medium text-slate-700 mb-1.5"
               >
-                Email
+                {t("email")}
               </label>
               <input
                 id="email"
@@ -104,7 +106,7 @@ function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder={t("emailPlaceholder")}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
               />
             </div>
@@ -115,14 +117,14 @@ function LoginForm() {
                   htmlFor="password"
                   className="block text-sm font-medium text-slate-700"
                 >
-                  Password
+                  {t("password")}
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowForgotMsg(true)}
                   className="text-xs font-medium text-primary hover:text-primary-dark"
                 >
-                  Forgot password?
+                  {t("forgotPassword")}
                 </button>
               </div>
               <input
@@ -132,7 +134,7 @@ function LoginForm() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder={t("passwordPlaceholder")}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
               />
             </div>
@@ -142,7 +144,7 @@ function LoginForm() {
               disabled={loading}
               className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Signing in..." : "Log In"}
+              {loading ? t("signingIn") : t("logIn")}
             </button>
           </form>
 
@@ -152,7 +154,7 @@ function LoginForm() {
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="bg-white px-3 text-slate-400">
-                or continue with
+                {t("orContinueWith")}
               </span>
             </div>
           </div>
@@ -180,17 +182,17 @@ function LoginForm() {
                 fill="#EA4335"
               />
             </svg>
-            Sign in with Google
+            {t("signInWithGoogle")}
           </button>
         </div>
 
         <p className="mt-6 text-center text-sm text-slate-500">
-          Don&apos;t have an account?{" "}
+          {t("noAccount")}{" "}
           <Link
             href="/signup"
             className="font-semibold text-primary hover:text-primary-dark"
           >
-            Sign up free
+            {t("signUpFree")}
           </Link>
         </p>
       </div>

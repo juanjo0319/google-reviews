@@ -2,19 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const tabs = [
-  { href: "/dashboard/settings", label: "General" },
-  { href: "/dashboard/settings/locations", label: "Locations" },
-  { href: "/dashboard/settings/brand-voice", label: "Brand Voice" },
-  { href: "/dashboard/settings/notifications", label: "Notifications" },
-  { href: "/dashboard/settings/team", label: "Team" },
-  { href: "/dashboard/settings/billing", label: "Billing" },
-  { href: "/dashboard/settings/usage", label: "AI Usage" },
-];
+import { useTranslations } from "next-intl";
 
 export function SettingsNav() {
+  const t = useTranslations("dashboard.settings");
   const pathname = usePathname();
+
+  const tabs = [
+    { href: "/dashboard/settings", label: t("general") },
+    { href: "/dashboard/settings/locations", label: t("locationsTab") },
+    { href: "/dashboard/settings/brand-voice", label: t("brandVoice") },
+    { href: "/dashboard/settings/notifications", label: t("notifications") },
+    { href: "/dashboard/settings/team", label: t("team") },
+    { href: "/dashboard/settings/billing", label: t("billing") },
+    { href: "/dashboard/settings/usage", label: t("aiUsage") },
+  ];
 
   return (
     <nav className="flex gap-1 border-b border-slate-200 overflow-x-auto">

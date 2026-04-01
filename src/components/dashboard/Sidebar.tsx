@@ -19,24 +19,27 @@ import {
   X,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/dashboard/reviews", label: "Reviews", icon: MessageSquare },
-  { href: "/dashboard/responses", label: "Responses", icon: Reply },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/locations", label: "Locations", icon: MapPin },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-];
-
-const bottomItems = [
-  { href: "/dashboard/help", label: "Help", icon: HelpCircle },
-];
+import { useTranslations } from "next-intl";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function Sidebar() {
+  const t = useTranslations("dashboard.nav");
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = [
+    { href: "/dashboard", label: t("dashboard"), icon: Home },
+    { href: "/dashboard/reviews", label: t("reviews"), icon: MessageSquare },
+    { href: "/dashboard/responses", label: t("responses"), icon: Reply },
+    { href: "/dashboard/analytics", label: t("analytics"), icon: BarChart3 },
+    { href: "/dashboard/locations", label: t("locations"), icon: MapPin },
+    { href: "/dashboard/settings", label: t("settings"), icon: Settings },
+  ];
+
+  const bottomItems = [
+    { href: "/dashboard/help", label: t("help"), icon: HelpCircle },
+  ];
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -60,7 +63,7 @@ export function Sidebar() {
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="ml-auto hidden lg:flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")}
         >
           {collapsed ? (
             <PanelLeft className="h-4 w-4" />
@@ -95,6 +98,11 @@ export function Sidebar() {
 
       {/* Bottom */}
       <div className="border-t border-slate-100 px-3 py-4 space-y-1">
+        {!collapsed && (
+          <div className="flex justify-center mb-2">
+            <LanguageSwitcher />
+          </div>
+        )}
         {bottomItems.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
@@ -110,10 +118,10 @@ export function Sidebar() {
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
-          title={collapsed ? "Logout" : undefined}
+          title={collapsed ? t("logout") : undefined}
         >
           <LogOut className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>Logout</span>}
+          {!collapsed && <span>{t("logout")}</span>}
         </button>
       </div>
     </div>

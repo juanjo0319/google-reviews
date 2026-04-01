@@ -11,6 +11,7 @@ import {
   Loader2,
   Copy,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ResponseGeneratorProps {
   reviewId: string;
@@ -21,6 +22,7 @@ export function ResponseGenerator({
   reviewId,
   onResponseSaved,
 }: ResponseGeneratorProps) {
+  const t = useTranslations("dashboard.ai");
   const [copied, setCopied] = useState(false);
 
   const { completion, isLoading, complete, setCompletion } = useCompletion({
@@ -47,7 +49,7 @@ export function ResponseGenerator({
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="h-5 w-5 text-primary" />
         <h3 className="text-sm font-semibold text-slate-900">
-          AI Response Generator
+          {t("responseGenerator")}
         </h3>
       </div>
 
@@ -58,7 +60,7 @@ export function ResponseGenerator({
           className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
         >
           <Sparkles className="h-4 w-4" />
-          Generate AI Response
+          {t("generateAiResponse")}
         </button>
       )}
 
@@ -66,7 +68,7 @@ export function ResponseGenerator({
       {isLoading && !completion && (
         <div className="flex items-center gap-2 text-sm text-slate-500 py-4">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Generating response...
+          {t("generatingResponse")}
         </div>
       )}
 
@@ -90,21 +92,21 @@ export function ResponseGenerator({
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
-                Regenerate
+                {t("regenerate")}
               </button>
               <button
                 onClick={() => generate({ shorterOrLonger: "shorter" })}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 <ArrowDownToLine className="h-3.5 w-3.5" />
-                Shorter
+                {t("shorter")}
               </button>
               <button
                 onClick={() => generate({ adjustTone: "more formal" })}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 <ArrowUpFromLine className="h-3.5 w-3.5" />
-                More formal
+                {t("moreFormal")}
               </button>
               <button
                 onClick={handleCopy}
@@ -115,7 +117,7 @@ export function ResponseGenerator({
                 ) : (
                   <Copy className="h-3.5 w-3.5" />
                 )}
-                {copied ? "Copied!" : "Copy"}
+                {copied ? t("copied") : t("copy")}
               </button>
               {onResponseSaved && (
                 <button
@@ -123,7 +125,7 @@ export function ResponseGenerator({
                   className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark transition-colors ml-auto"
                 >
                   <Check className="h-3.5 w-3.5" />
-                  Save as Draft
+                  {t("saveAsDraft")}
                 </button>
               )}
             </div>

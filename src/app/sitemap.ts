@@ -51,31 +51,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
     },
     {
-      url: `${BASE}/compare`,
-      priority: 0.8,
-      changeFrequency: "monthly",
-      lastModified: now,
-    },
-    {
       url: `${BASE}/tools/review-response-generator`,
       priority: 0.8,
       changeFrequency: "monthly",
       lastModified: now,
     },
   ];
-
-  const comparisonPages: MetadataRoute.Sitemap = [
-    "/compare/revup-vs-birdeye",
-    "/compare/revup-vs-podium",
-    "/compare/revup-vs-reviewtrackers",
-    "/compare/revup-vs-reputation-com",
-    "/compare/revup-vs-yext",
-  ].map((path) => ({
-    url: `${BASE}${path}`,
-    priority: 0.7,
-    changeFrequency: "monthly" as const,
-    lastModified: now,
-  }));
 
   const solutionPages: MetadataRoute.Sitemap = [
     "/solutions/restaurants",
@@ -106,7 +87,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticPages,
-    ...comparisonPages,
     ...solutionPages,
     ...blogPosts,
     ...legalPages,

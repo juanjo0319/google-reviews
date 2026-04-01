@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 
 interface Notification {
   id: string;
@@ -47,6 +48,7 @@ export function NotificationList({
 }: {
   notifications: Notification[];
 }) {
+  const t = useTranslations("dashboard.notifications");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -95,10 +97,10 @@ export function NotificationList({
       <div className="rounded-2xl bg-white border border-slate-100 p-12 text-center">
         <Bell className="h-12 w-12 text-slate-200 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-slate-900 mb-1">
-          No notifications
+          {t("noNotifications")}
         </h3>
         <p className="text-sm text-slate-500">
-          You&apos;ll see new review alerts and updates here.
+          {t("noNotificationsDesc")}
         </p>
       </div>
     );
@@ -109,14 +111,16 @@ export function NotificationList({
       {unreadCount > 0 && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-slate-500">
-            {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
+            {unreadCount !== 1
+              ? t("unreadCountPlural", { count: unreadCount })
+              : t("unreadCount", { count: unreadCount })}
           </span>
           <button
             onClick={markAllAsRead}
             disabled={isPending}
             className="text-sm font-medium text-primary hover:text-primary-dark disabled:opacity-50"
           >
-            Mark all as read
+            {t("markAllAsRead")}
           </button>
         </div>
       )}
@@ -162,7 +166,7 @@ export function NotificationList({
                     disabled={isPending}
                     className="text-xs text-primary hover:text-primary-dark font-medium"
                   >
-                    Mark read
+                    {t("markRead")}
                   </button>
                 )}
                 {link !== "#" && (

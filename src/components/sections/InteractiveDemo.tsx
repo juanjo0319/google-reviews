@@ -8,58 +8,9 @@ import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { useTranslations } from "next-intl";
 
 type ReviewTab = "5-star" | "3-star" | "1-star";
-
-const REVIEWS: Record<
-  ReviewTab,
-  {
-    name: string;
-    initials: string;
-    stars: number;
-    text: string;
-    response: string;
-    sentiment: string;
-    sentimentColor: "success" | "warning" | "danger";
-  }
-> = {
-  "5-star": {
-    name: "Sarah Mitchell",
-    initials: "SM",
-    stars: 5,
-    text: "Absolutely wonderful experience! The staff went above and beyond to make our anniversary dinner special. The food was incredible, and the ambiance was perfect. Will definitely be coming back!",
-    response:
-      "Thank you so much, Sarah! We're thrilled that we could make your anniversary celebration special. Our team takes great pride in creating memorable dining experiences, and your kind words mean the world to us. We look forward to welcoming you back soon — perhaps we can make your next visit equally unforgettable!",
-    sentiment: "Positive",
-    sentimentColor: "success",
-  },
-  "3-star": {
-    name: "James Wilson",
-    initials: "JW",
-    stars: 3,
-    text: "Food was decent but the wait was too long for a Tuesday night. Server was friendly but seemed overwhelmed. Might give it another shot but they need to work on timing.",
-    response:
-      "Hi James, thank you for your honest feedback. You're right — wait times on that evening didn't meet our standards, and we're addressing this with additional staffing during peak hours. We'd love the chance to show you the experience we're known for. If you visit again, please ask for a manager — we'll make sure your next visit is seamless.",
-    sentiment: "Mixed",
-    sentimentColor: "warning",
-  },
-  "1-star": {
-    name: "David Chen",
-    initials: "DC",
-    stars: 1,
-    text: "Terrible service. Waited 45 minutes for appetizers, food was cold when it arrived, and the manager was dismissive when we complained. Won't be returning.",
-    response:
-      "David, I sincerely apologize for this experience — it falls far below what we strive for. Cold food and long waits are unacceptable, and a dismissive response makes it worse. I'd like to make this right personally. Could you email me at manager@restaurant.com? I want to understand what happened and ensure it doesn't happen again.",
-    sentiment: "Negative",
-    sentimentColor: "danger",
-  },
-};
-
-const TABS: { key: ReviewTab; label: string }[] = [
-  { key: "5-star", label: "5-Star Review" },
-  { key: "3-star", label: "3-Star Review" },
-  { key: "1-star", label: "1-Star Review" },
-];
 
 function StarRating({ count }: { count: number }) {
   return (
@@ -78,6 +29,55 @@ function StarRating({ count }: { count: number }) {
 }
 
 export function InteractiveDemo() {
+  const t = useTranslations("marketing.interactiveDemo");
+
+  const REVIEWS: Record<
+    ReviewTab,
+    {
+      name: string;
+      initials: string;
+      stars: number;
+      text: string;
+      response: string;
+      sentiment: string;
+      sentimentColor: "success" | "warning" | "danger";
+    }
+  > = {
+    "5-star": {
+      name: "Sarah Mitchell",
+      initials: "SM",
+      stars: 5,
+      text: t("review5Star"),
+      response: t("response5Star"),
+      sentiment: t("sentiment5Star"),
+      sentimentColor: "success",
+    },
+    "3-star": {
+      name: "James Wilson",
+      initials: "JW",
+      stars: 3,
+      text: t("review3Star"),
+      response: t("response3Star"),
+      sentiment: t("sentiment3Star"),
+      sentimentColor: "warning",
+    },
+    "1-star": {
+      name: "David Chen",
+      initials: "DC",
+      stars: 1,
+      text: t("review1Star"),
+      response: t("response1Star"),
+      sentiment: t("sentiment1Star"),
+      sentimentColor: "danger",
+    },
+  };
+
+  const TABS: { key: ReviewTab; label: string }[] = [
+    { key: "5-star", label: t("tab5Star") },
+    { key: "3-star", label: t("tab3Star") },
+    { key: "1-star", label: t("tab1Star") },
+  ];
+
   const [activeTab, setActiveTab] = useState<ReviewTab>("5-star");
   const [displayedText, setDisplayedText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -127,9 +127,9 @@ export function InteractiveDemo() {
     <section className="py-[var(--section-padding-y)] px-[var(--section-padding-x)]">
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          eyebrow="See It In Action"
-          heading="Watch AI Craft the Perfect Response"
-          description="Select a review type below and see how RevUp.ai responds."
+          eyebrow={t("eyebrow")}
+          heading={t("heading")}
+          description={t("description")}
         />
 
         {/* Tabs */}
@@ -168,7 +168,7 @@ export function InteractiveDemo() {
               )}
             >
               <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-4">
-                Incoming Review
+                {t("incomingReview")}
               </p>
 
               <div className="flex items-center gap-3 mb-4">
@@ -181,7 +181,7 @@ export function InteractiveDemo() {
                   </p>
                   <div className="flex items-center gap-2">
                     <StarRating count={review.stars} />
-                    <span className="text-xs text-neutral-400">2 hours ago</span>
+                    <span className="text-xs text-neutral-400">{t("hoursAgo")}</span>
                   </div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export function InteractiveDemo() {
             >
               <div className="flex items-center gap-2 mb-4">
                 <p className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
-                  AI Response
+                  {t("aiResponse")}
                 </p>
                 <Sparkles className="h-3.5 w-3.5 text-accent" />
                 <Badge variant="primary" className="ml-auto text-[10px]">
@@ -218,7 +218,7 @@ export function InteractiveDemo() {
                 {isAnalyzing ? (
                   <div className="flex items-center gap-2 text-sm text-neutral-500">
                     <Loader2 className="h-4 w-4 animate-spin text-accent" />
-                    Analyzing review...
+                    {t("analyzingReview")}
                   </div>
                 ) : (
                   <p className="text-sm text-neutral-700 leading-relaxed">
@@ -234,13 +234,13 @@ export function InteractiveDemo() {
               {/* Action buttons */}
               <div className="flex gap-2 mt-4 pt-4 border-t border-neutral-100">
                 <span className="text-xs text-neutral-400 bg-neutral-50 px-3 py-1.5 rounded-lg border border-neutral-100">
-                  Edit
+                  {t("edit")}
                 </span>
                 <span className="text-xs text-neutral-400 bg-neutral-50 px-3 py-1.5 rounded-lg border border-neutral-100">
-                  Approve
+                  {t("approve")}
                 </span>
                 <span className="text-xs text-white bg-success px-3 py-1.5 rounded-lg font-medium">
-                  Publish to Google ✓
+                  {t("publishToGoogle")} ✓
                 </span>
               </div>
             </m.div>
@@ -249,9 +249,9 @@ export function InteractiveDemo() {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-neutral-500 italic mb-6">
-            That took 4 seconds. Manually? 10 minutes.
+            {t("timeComparison")}
           </p>
-          <Button href="/signup">Try It With Your Reviews</Button>
+          <Button href="/signup">{t("tryIt")}</Button>
         </div>
       </div>
     </section>

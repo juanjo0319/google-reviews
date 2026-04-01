@@ -59,7 +59,7 @@ export async function regenerateResponse(
     system: [
       {
         type: "text",
-        text: "You are an expert at crafting professional responses to Google reviews. Given an original review, an existing draft response, and modification instructions, write an improved response. Output ONLY the new response text.",
+        text: "You are an expert at crafting professional responses to Google reviews. Given an original review, an existing draft response, and modification instructions, write an improved response. Output ONLY the new response text. IMPORTANT: Respond in the same language as the review. If the review is in Spanish, respond in Spanish. If in English, respond in English.",
         cache_control: { type: "ephemeral" },
       },
     ],

@@ -7,8 +7,10 @@ import { signIn } from "next-auth/react";
 import { register, type RegisterResult } from "@/app/actions/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 export default function SignupPage() {
+  const t = useTranslations("auth.signup");
   const [state, formAction, pending] = useActionState<RegisterResult | null, FormData>(register, null);
   const router = useRouter();
 
@@ -18,25 +20,26 @@ export default function SignupPage() {
     }
   }, [state?.success, router]);
 
+  const benefits = [
+    t("benefit1"),
+    t("benefit2"),
+    t("benefit3"),
+    t("benefit4"),
+    t("benefit5"),
+  ];
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] bg-surface">
       {/* Left — Value prop */}
       <div className="hidden lg:flex flex-col justify-center w-1/2 bg-surface-dark text-white px-16 py-12">
         <h2 className="text-3xl font-bold mb-6">
-          Start managing your reviews with AI today
+          {t("startManaging")}
         </h2>
         <p className="text-slate-400 text-lg mb-10 leading-relaxed">
-          Join hundreds of businesses that save 10+ hours every week with
-          automated, AI-powered review responses.
+          {t("joinHundreds")}
         </p>
         <ul className="space-y-5">
-          {[
-            "14-day free trial, no credit card required",
-            "Set up in under 5 minutes",
-            "AI responses powered by Claude",
-            "Full control — approve before publishing",
-            "Cancel anytime, no questions asked",
-          ].map((item) => (
+          {benefits.map((item) => (
             <li key={item} className="flex items-start gap-3">
               <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20">
                 <Check className="h-3 w-3 text-primary" />
@@ -60,13 +63,13 @@ export default function SignupPage() {
                 Review<span className="text-primary">AI</span>
               </span>
             </Link>
-            <p className="text-slate-500">Create your free account</p>
+            <p className="text-slate-500">{t("createAccount")}</p>
           </div>
 
           {/* Success message */}
           {state?.success && (
             <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-              Account created! Check your email for a verification link.
+              {t("accountCreated")}
             </div>
           )}
 
@@ -102,7 +105,7 @@ export default function SignupPage() {
                   fill="#EA4335"
                 />
               </svg>
-              Sign up with Google
+              {t("signUpWithGoogle")}
             </button>
 
             <div className="relative mb-6">
@@ -111,7 +114,7 @@ export default function SignupPage() {
               </div>
               <div className="relative flex justify-center text-xs">
                 <span className="bg-white px-3 text-slate-400">
-                  or sign up with email
+                  {t("orSignUpWithEmail")}
                 </span>
               </div>
             </div>
@@ -122,14 +125,14 @@ export default function SignupPage() {
                   htmlFor="name"
                   className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
-                  Full Name
+                  {t("fullName")}
                 </label>
                 <input
                   id="name"
                   name="name"
                   type="text"
                   required
-                  placeholder="John Doe"
+                  placeholder={t("fullNamePlaceholder")}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 />
               </div>
@@ -139,14 +142,14 @@ export default function SignupPage() {
                   htmlFor="email"
                   className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
-                  Work Email
+                  {t("workEmail")}
                 </label>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   required
-                  placeholder="you@company.com"
+                  placeholder={t("emailPlaceholder")}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 />
               </div>
@@ -156,7 +159,7 @@ export default function SignupPage() {
                   htmlFor="password"
                   className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
-                  Password
+                  {t("password")}
                 </label>
                 <input
                   id="password"
@@ -164,7 +167,7 @@ export default function SignupPage() {
                   type="password"
                   required
                   minLength={8}
-                  placeholder="Min. 8 characters"
+                  placeholder={t("passwordPlaceholder")}
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 />
               </div>
@@ -174,30 +177,30 @@ export default function SignupPage() {
                 disabled={pending}
                 className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {pending ? "Creating account..." : "Create Free Account"}
+                {pending ? t("creatingAccount") : t("createFreeAccount")}
               </button>
             </form>
 
             <p className="mt-4 text-center text-xs text-slate-400">
-              By signing up, you agree to our{" "}
+              {t("agreeTerms")}{" "}
               <Link href="/terms" className="text-primary hover:underline">
-                Terms
+                {t("terms")}
               </Link>{" "}
-              and{" "}
+              {t("and")}{" "}
               <Link href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
+                {t("privacyPolicy")}
               </Link>
               .
             </p>
           </div>
 
           <p className="mt-6 text-center text-sm text-slate-500">
-            Already have an account?{" "}
+            {t("alreadyHaveAccount")}{" "}
             <Link
               href="/login"
               className="font-semibold text-primary hover:text-primary-dark"
             >
-              Log in
+              {t("logIn")}
             </Link>
           </p>
         </div>

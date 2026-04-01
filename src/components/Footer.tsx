@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("common.footer");
+  const navT = await getTranslations("common.nav");
+
   return (
     <footer className="bg-surface-darker text-slate-400">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
@@ -17,8 +21,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm leading-relaxed">
-              AI-powered Google review management. Read, analyze, and respond to
-              every review — automatically.
+              {t("description")}
             </p>
             <p className="mt-4 text-xs text-slate-500">
               Powered by Claude AI
@@ -28,36 +31,27 @@ export function Footer() {
           {/* Product */}
           <div>
             <h4 className="text-sm font-semibold text-white mb-4 font-heading">
-              Product
+              {t("product")}
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
-                  href="#features"
-                  className="hover:text-white transition-colors"
-                >
-                  Features
+                <a href="#features" className="hover:text-white transition-colors">
+                  {navT("features")}
                 </a>
               </li>
               <li>
-                <a
-                  href="#pricing"
-                  className="hover:text-white transition-colors"
-                >
-                  Pricing
+                <a href="#pricing" className="hover:text-white transition-colors">
+                  {navT("pricing")}
                 </a>
               </li>
               <li>
-                <a
-                  href="#how-it-works"
-                  className="hover:text-white transition-colors"
-                >
-                  How It Works
+                <a href="#how-it-works" className="hover:text-white transition-colors">
+                  {navT("howItWorks")}
                 </a>
               </li>
               <li>
                 <a href="#faq" className="hover:text-white transition-colors">
-                  FAQ
+                  {navT("faq")}
                 </a>
               </li>
             </ul>
@@ -66,27 +60,22 @@ export function Footer() {
           {/* Resources */}
           <div>
             <h4 className="text-sm font-semibold text-white mb-4 font-heading">
-              Resources
+              {t("resources")}
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  Blog
+                  {navT("blog")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  Templates
+                  {t("templates")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  Case Studies
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Guides
+                  {t("caseStudies")}
                 </a>
               </li>
             </ul>
@@ -95,17 +84,17 @@ export function Footer() {
           {/* Company */}
           <div>
             <h4 className="text-sm font-semibold text-white mb-4 font-heading">
-              Company
+              {t("company")}
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  About
+                  {t("about")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  Contact
+                  {t("contact")}
                 </a>
               </li>
             </ul>
@@ -119,17 +108,17 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  Privacy Policy
+                  {t("privacyPolicy")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  Terms of Service
+                  {t("termsOfService")}
                 </a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">
-                  Security
+                  {t("security")}
                 </a>
               </li>
             </ul>
@@ -138,7 +127,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm">
-            &copy; {new Date().getFullYear()} ReviewAI. All rights reserved.
+            &copy; {new Date().getFullYear()} ReviewAI. {t("allRightsReserved")}
           </p>
           <p className="text-xs text-slate-500">
             Powered by Claude AI

@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { OrgSwitcher } from "./OrgSwitcher";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { useTranslations } from "next-intl";
 
 interface Notification {
   id: string;
@@ -45,6 +46,7 @@ export function DashboardHeader({
   notifications,
   unreadCount,
 }: DashboardHeaderProps) {
+  const t = useTranslations("dashboard.header");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -119,7 +121,7 @@ export function DashboardHeader({
                 className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
               >
                 <User className="h-4 w-4" />
-                Profile
+                {t("profile")}
               </Link>
               <Link
                 href="/dashboard/settings"
@@ -127,7 +129,7 @@ export function DashboardHeader({
                 className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
               >
                 <Settings className="h-4 w-4" />
-                Settings
+                {t("settings")}
               </Link>
               <div className="border-t border-slate-100 mt-1 pt-1">
                 <button
@@ -135,7 +137,7 @@ export function DashboardHeader({
                   className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                 >
                   <LogOut className="h-4 w-4" />
-                  Sign out
+                  {t("signOut")}
                 </button>
               </div>
             </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -68,25 +70,30 @@ export const metadata: Metadata = {
   verification: { google: "your-search-console-verification-code" },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${jakarta.variable} ${inter.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
         <a href="#main-content" className="skip-to-content">
           Skip to content
         </a>
-        <Providers>
-          {/* Header will be injected by marketing layout */}
-          {children}
-          {/* Footer will be injected by marketing layout */}
-        </Providers>
+        <NextIntlClientProvider messages={messages}>
+          <Providers>
+            {/* Header will be injected by marketing layout */}
+            {children}
+            {/* Footer will be injected by marketing layout */}
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

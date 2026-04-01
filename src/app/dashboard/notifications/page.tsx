@@ -2,10 +2,12 @@ import { auth } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { NotificationList } from "./notification-list";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
+  const t = await getTranslations("dashboard.notifications");
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -21,9 +23,9 @@ export default async function NotificationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
         <p className="text-sm text-slate-500 mt-1">
-          All your notification history
+          {t("subtitle")}
         </p>
       </div>
 

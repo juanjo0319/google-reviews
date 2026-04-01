@@ -8,74 +8,76 @@ import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { useTranslations } from "next-intl";
 
 type Billing = "monthly" | "annual";
 
-const PLANS = [
-  {
-    name: "Starter",
-    subtitle: "For small businesses getting started",
-    monthly: 29,
-    annual: 23,
-    features: [
-      "1 Google Business location",
-      "Up to 100 AI responses/month",
-      "Basic sentiment analysis",
-      "Email notifications",
-      "Email support",
-    ],
-    cta: "Start Free Trial",
-    ctaVariant: "secondary" as const,
-    highlighted: false,
-  },
-  {
-    name: "Pro",
-    subtitle: "For growing businesses that need more",
-    monthly: 79,
-    annual: 63,
-    features: [
-      "Up to 10 locations",
-      "500 AI responses/month",
-      "Advanced sentiment + trend analysis",
-      "Brand voice customization",
-      "Priority support",
-      "Multi-user access (up to 10)",
-      "Weekly digest reports",
-    ],
-    cta: "Start Free Trial",
-    ctaVariant: "primary" as const,
-    highlighted: true,
-    badge: "Most Popular",
-  },
-  {
-    name: "Enterprise",
-    subtitle: "For multi-location and franchise businesses",
-    monthly: null,
-    annual: null,
-    features: [
-      "Unlimited locations",
-      "Unlimited AI responses",
-      "Custom AI model training",
-      "Dedicated account manager",
-      "SSO & API access",
-      "Custom integrations",
-      "SLA guarantee",
-    ],
-    cta: "Contact Sales",
-    ctaVariant: "secondary" as const,
-    highlighted: false,
-  },
-];
-
-const INCLUDES = [
-  { icon: Calendar, text: "14-day free trial" },
-  { icon: CreditCard, text: "No credit card" },
-  { icon: Shield, text: "Cancel anytime" },
-  { icon: Link2, text: "Google integration" },
-];
-
 export function Pricing() {
+  const t = useTranslations("marketing.pricing");
   const [billing, setBilling] = useState<Billing>("monthly");
+
+  const PLANS = [
+    {
+      name: t("starterName"),
+      subtitle: t("starterSubtitle"),
+      monthly: 29,
+      annual: 23,
+      features: [
+        t("feature_1location"),
+        t("feature_100responses"),
+        t("feature_basicSentiment"),
+        t("feature_emailNotifications"),
+        t("feature_emailSupport"),
+      ],
+      cta: t("startFreeTrial"),
+      ctaVariant: "secondary" as const,
+      highlighted: false,
+    },
+    {
+      name: t("proName"),
+      subtitle: t("proSubtitle"),
+      monthly: 79,
+      annual: 63,
+      features: [
+        t("feature_10locations"),
+        t("feature_500responses"),
+        t("feature_advancedSentiment"),
+        t("feature_brandVoice"),
+        t("feature_prioritySupport"),
+        t("feature_multiUser"),
+        t("feature_weeklyDigest"),
+      ],
+      cta: t("startFreeTrial"),
+      ctaVariant: "primary" as const,
+      highlighted: true,
+      badge: t("mostPopular"),
+    },
+    {
+      name: t("enterpriseName"),
+      subtitle: t("enterpriseSubtitle"),
+      monthly: null,
+      annual: null,
+      features: [
+        t("feature_unlimitedLocations"),
+        t("feature_unlimitedResponses"),
+        t("feature_customModel"),
+        t("feature_dedicatedManager"),
+        t("feature_ssoApi"),
+        t("feature_customIntegrations"),
+        t("feature_sla"),
+      ],
+      cta: t("contactSales"),
+      ctaVariant: "secondary" as const,
+      highlighted: false,
+    },
+  ];
+
+  const INCLUDES = [
+    { icon: Calendar, text: t("includes14day") },
+    { icon: CreditCard, text: t("includesNoCard") },
+    { icon: Shield, text: t("includesCancel") },
+    { icon: Link2, text: t("includesGoogle") },
+  ];
 
   return (
     <section
@@ -84,9 +86,9 @@ export function Pricing() {
     >
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          eyebrow="Simple Pricing"
-          heading="Start Free. Scale as You Grow."
-          description="All plans include a 14-day free trial. No credit card required."
+          eyebrow={t("eyebrow")}
+          heading={t("heading")}
+          description={t("description")}
         />
 
         {/* Billing toggle */}
@@ -97,7 +99,7 @@ export function Pricing() {
               billing === "monthly" ? "text-neutral-900" : "text-neutral-400"
             )}
           >
-            Monthly
+            {t("monthly")}
           </span>
           <button
             onClick={() =>
@@ -121,7 +123,7 @@ export function Pricing() {
               billing === "annual" ? "text-neutral-900" : "text-neutral-400"
             )}
           >
-            Annual
+            {t("annual")}
           </span>
           <AnimatePresence>
             {billing === "annual" && (
@@ -130,7 +132,7 @@ export function Pricing() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
               >
-                <Badge variant="success">Save 20%</Badge>
+                <Badge variant="success">{t("save20")}</Badge>
               </m.span>
             )}
           </AnimatePresence>
@@ -179,16 +181,16 @@ export function Pricing() {
                         ${billing === "monthly" ? plan.monthly : plan.annual}
                       </m.span>
                     </AnimatePresence>
-                    <span className="text-lg text-neutral-500">/mo</span>
+                    <span className="text-lg text-neutral-500">{t("perMonth")}</span>
                   </div>
                 ) : (
                   <span className="text-5xl font-bold font-heading text-neutral-900">
-                    Custom
+                    {t("custom")}
                   </span>
                 )}
                 {billing === "annual" && plan.annual !== null && (
                   <p className="text-xs text-neutral-400 mt-1">
-                    Billed ${plan.annual * 12}/yr
+                    {t("billedYearly", { amount: String(plan.annual * 12) })}
                   </p>
                 )}
               </div>
@@ -229,9 +231,9 @@ export function Pricing() {
         </div>
 
         <p className="mt-4 text-center text-sm text-neutral-400">
-          Have questions?{" "}
+          {t("haveQuestions")}{" "}
           <a href="#faq" className="text-primary hover:underline">
-            Check our FAQ
+            {t("checkFaq")}
           </a>
         </p>
       </div>
