@@ -318,21 +318,23 @@ export async function removeMember(
 }
 
 export async function switchOrganization(orgId: string): Promise<OrgActionResult> {
+  const { isSuperAdmin } = await import("@/lib/auth/superadmin");
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "Not authenticated" };
 
-  const supabase = createAdminClient();
+  // Superadmins can switch to any org
+  if (!isSuperAdmin(session.user.email)) {
+    const supabase = createAdminClient();
+    const { data: membership } = await supabase
+      .from("organization_members")
+      .select("organization_id")
+      .eq("organization_id", orgId)
+      .eq("user_id", session.user.id)
+      .single();
 
-  // Verify user is a member
-  const { data: membership } = await supabase
-    .from("organization_members")
-    .select("organization_id")
-    .eq("organization_id", orgId)
-    .eq("user_id", session.user.id)
-    .single();
-
-  if (!membership) {
-    return { success: false, error: "You are not a member of this organization" };
+    if (!membership) {
+      return { success: false, error: "You are not a member of this organization" };
+    }
   }
 
   const cookieStore = await cookies();
