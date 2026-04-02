@@ -49,6 +49,8 @@ export async function proxy(request: NextRequest) {
   // If auth returns a response (redirect, etc.), pass through but ensure cookie
   if (authResponse) {
     const response = authResponse instanceof NextResponse ? authResponse : NextResponse.next();
+    // Pass pathname to server components so layouts can detect current route
+    response.headers.set("x-pathname", request.nextUrl.pathname);
     // Set locale cookie if not already set
     if (!request.cookies.get(COOKIE_NAME)) {
       response.cookies.set(COOKIE_NAME, locale, {
@@ -62,6 +64,8 @@ export async function proxy(request: NextRequest) {
 
   // No auth redirect needed — just continue
   const response = NextResponse.next();
+  // Pass pathname to server components so layouts can detect current route
+  response.headers.set("x-pathname", request.nextUrl.pathname);
   // Set locale cookie if not already set
   if (!request.cookies.get(COOKIE_NAME)) {
     response.cookies.set(COOKIE_NAME, locale, {

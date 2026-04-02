@@ -25,14 +25,10 @@ export default async function DashboardLayout({
   await ensureOrganization();
 
   // Check if user has completed onboarding — redirect if not.
-  // Skip this check when we are already on the onboarding page to avoid
-  // infinite redirects. Next.js sets internal headers we can inspect.
+  // Skip this check when already on the onboarding page to avoid infinite redirects.
+  // The proxy sets x-pathname on every request so server components can read the URL.
   const headerStore = await headers();
-  const pathname =
-    headerStore.get("x-invoke-path") ??
-    headerStore.get("x-nextjs-page") ??
-    headerStore.get("x-matched-path") ??
-    "";
+  const pathname = headerStore.get("x-pathname") ?? "";
   const isOnOnboarding = pathname.includes("/onboarding");
 
   if (!isOnOnboarding) {
