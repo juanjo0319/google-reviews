@@ -6,6 +6,7 @@ import { ensureOrganization } from "@/app/actions/organizations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { checkOnboardingCompleted } from "@/lib/onboarding";
 
 export const dynamic = "force-dynamic";
 
@@ -23,20 +24,20 @@ export default async function DashboardLayout({
   // Ensure user has at least one organization
   await ensureOrganization();
 
-  // Check if user has completed onboarding
+  // Check if user has completed onboarding — redirect if not.
+  // Skip this check when we are already on the onboarding page to avoid
+  // infinite redirects. Next.js sets internal headers we can inspect.
   const headerStore = await headers();
-  const pathname = headerStore.get("x-next-pathname") ?? headerStore.get("x-invoke-path") ?? "";
-  const isOnboardingPage = pathname.includes("/dashboard/onboarding");
+  const pathname =
+    headerStore.get("x-invoke-path") ??
+    headerStore.get("x-nextjs-page") ??
+    headerStore.get("x-matched-path") ??
+    "";
+  const isOnOnboarding = pathname.includes("/onboarding");
 
-  if (!isOnboardingPage) {
-    const supabaseAdmin = createAdminClient();
-    const { data: userData } = await supabaseAdmin
-      .from("users")
-      .select("onboarding_completed")
-      .eq("id", session.user.id)
-      .single();
-
-    if (userData && !userData.onboarding_completed) {
+  if (!isOnOnboarding) {
+    const onboardingDone = await checkOnboardingCompleted(session.user.id);
+    if (!onboardingDone) {
       redirect("/dashboard/onboarding");
     }
   }
