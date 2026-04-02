@@ -128,8 +128,7 @@ export function OnboardingWizard({
           setError(result.error ?? "Failed to complete onboarding");
           return;
         }
-        router.push("/dashboard");
-        router.refresh();
+        window.location.href = "/dashboard";
       });
     }
   }
