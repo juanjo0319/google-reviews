@@ -27,19 +27,24 @@ export default async function LocationsPage() {
     .eq("organization_id", orgData.orgId)
     .order("created_at", { ascending: true });
 
-  // Fetch review counts per location
+  // Fetch review counts per location using parallel count queries (no full row fetches)
   const locationIds = (locations ?? []).map((l) => l.id);
   let reviewCounts: Record<string, number> = {};
 
   if (locationIds.length > 0) {
-    const { data: reviewData } = await supabase
-      .from("reviews")
-      .select("location_id")
-      .eq("organization_id", orgData.orgId)
-      .in("location_id", locationIds);
+    const countResults = await Promise.all(
+      locationIds.map((locId) =>
+        supabase
+          .from("reviews")
+          .select("id", { count: "exact", head: true })
+          .eq("organization_id", orgData.orgId)
+          .eq("location_id", locId)
+          .then(({ count }) => ({ locId, count: count ?? 0 }))
+      )
+    );
 
-    for (const r of reviewData ?? []) {
-      reviewCounts[r.location_id] = (reviewCounts[r.location_id] || 0) + 1;
+    for (const { locId, count } of countResults) {
+      reviewCounts[locId] = count;
     }
   }
 

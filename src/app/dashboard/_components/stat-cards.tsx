@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { getCurrentOrg } from "@/lib/auth/permissions";
 import { getReviewStats } from "@/lib/services/reviews";
 
 function StatCard({
@@ -55,11 +54,8 @@ function StatCard({
   );
 }
 
-export async function StatCards() {
-  const orgData = await getCurrentOrg();
-  if (!orgData) return null;
-
-  const stats = await getReviewStats(orgData.orgId);
+export async function StatCards({ orgId }: { orgId: string }) {
+  const stats = await getReviewStats(orgId);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,16 +1,9 @@
 import { TrendingUp, MapPin, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { getCurrentOrg } from "@/lib/auth/permissions";
-import { hasConnectedLocations, hasGoogleTokens } from "@/lib/services/organizations";
+import { hasGoogleTokens } from "@/lib/services/organizations";
 
-export async function SetupPrompt() {
-  const orgData = await getCurrentOrg();
-  if (!orgData) return null;
-
-  const hasLocations = await hasConnectedLocations(orgData.orgId);
-  if (hasLocations) return null;
-
-  const hasGoogleConnected = await hasGoogleTokens(orgData.orgId);
+export async function SetupPrompt({ orgId }: { orgId: string }) {
+  const hasGoogleConnected = await hasGoogleTokens(orgId);
 
   return (
     <div className="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-8 lg:p-12">

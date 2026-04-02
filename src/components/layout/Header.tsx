@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence } from "motion/react";
-import * as m from "motion/react-client";
 import { Menu, X, ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -27,17 +25,20 @@ function Logo() {
 function DropdownMenu({
   items,
   onClose,
+  open,
 }: {
   items: { label: string; href: string }[];
   onClose: () => void;
+  open: boolean;
 }) {
   return (
-    <m.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 8 }}
-      transition={{ duration: 0.15, ease: "easeOut" }}
-      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl bg-white p-2 shadow-xl border border-neutral-100 z-50"
+    <div
+      className={cn(
+        "absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl bg-white p-2 shadow-xl border border-neutral-100 z-50 transition-all duration-150 ease-out",
+        open
+          ? "opacity-100 translate-y-0 pointer-events-auto"
+          : "opacity-0 translate-y-2 pointer-events-none"
+      )}
     >
       {items.map((item) => (
         <Link
@@ -49,7 +50,7 @@ function DropdownMenu({
           {item.label}
         </Link>
       ))}
-    </m.div>
+    </div>
   );
 }
 
@@ -174,14 +175,11 @@ export function Header() {
                       )}
                     />
                   </button>
-                  <AnimatePresence>
-                    {dropdownOpen && (
-                      <DropdownMenu
-                        items={link.children}
-                        onClose={() => setDropdownOpen(false)}
-                      />
-                    )}
-                  </AnimatePresence>
+                  <DropdownMenu
+                    items={link.children}
+                    onClose={() => setDropdownOpen(false)}
+                    open={dropdownOpen}
+                  />
                 </div>
               ) : (
                 <Link
@@ -230,71 +228,69 @@ export function Header() {
       </div>
 
       {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <m.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="md:hidden fixed inset-0 top-16 z-50 bg-white overflow-y-auto"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation menu"
-          >
-            <nav className="px-4 py-6 space-y-1">
-              {NAV_LINKS.map((link) =>
-                link.children ? (
-                  <div key={link.label} className="space-y-1">
-                    <p className="px-3 py-2 text-sm font-semibold text-neutral-400 uppercase tracking-wider">
-                      {link.label}
-                    </p>
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.href}
-                        href={child.href}
-                        className="block px-3 py-2 pl-6 text-base font-medium text-neutral-600 hover:text-primary hover:bg-neutral-50 rounded-lg"
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {child.label}
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
+      <div
+        className={cn(
+          "md:hidden fixed inset-0 top-16 z-50 bg-white overflow-y-auto transition-all duration-200 ease-out",
+          mobileOpen
+            ? "opacity-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 -translate-y-2.5 pointer-events-none"
+        )}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        aria-hidden={!mobileOpen}
+      >
+        <nav className="px-4 py-6 space-y-1">
+          {NAV_LINKS.map((link) =>
+            link.children ? (
+              <div key={link.label} className="space-y-1">
+                <p className="px-3 py-2 text-sm font-semibold text-neutral-400 uppercase tracking-wider">
+                  {link.label}
+                </p>
+                {link.children.map((child) => (
                   <Link
-                    key={link.label}
-                    href={link.href}
-                    className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary hover:bg-neutral-50 rounded-lg"
+                    key={child.href}
+                    href={child.href}
+                    className="block px-3 py-2 pl-6 text-base font-medium text-neutral-600 hover:text-primary hover:bg-neutral-50 rounded-lg"
                     onClick={() => setMobileOpen(false)}
                   >
-                    {link.label}
+                    {child.label}
                   </Link>
-                )
-              )}
-
-              <div className="pt-6 mt-4 border-t border-neutral-100 space-y-3">
-                <div className="flex justify-center">
-                  <LanguageSwitcher />
-                </div>
-                <Link
-                  href="/login"
-                  className="block px-3 py-2 text-base font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg text-center"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {t("login")}
-                </Link>
-                <Button
-                  href="/signup"
-                  className="w-full"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {t("startFreeTrial")}
-                </Button>
+                ))}
               </div>
-            </nav>
-          </m.div>
-        )}
-      </AnimatePresence>
+            ) : (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="block px-3 py-2 text-base font-medium text-neutral-600 hover:text-primary hover:bg-neutral-50 rounded-lg"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.label}
+              </Link>
+            )
+          )}
+
+          <div className="pt-6 mt-4 border-t border-neutral-100 space-y-3">
+            <div className="flex justify-center">
+              <LanguageSwitcher />
+            </div>
+            <Link
+              href="/login"
+              className="block px-3 py-2 text-base font-medium text-neutral-700 hover:bg-neutral-50 rounded-lg text-center"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t("login")}
+            </Link>
+            <Button
+              href="/signup"
+              className="w-full"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t("startFreeTrial")}
+            </Button>
+          </div>
+        </nav>
+      </div>
     </header>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { OrgSwitcher } from "./OrgSwitcher";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useTranslations } from "next-intl";
@@ -91,9 +92,11 @@ export function DashboardHeader({
             className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition-colors"
           >
             {user.image ? (
-              <img
+              <Image
                 src={user.image}
                 alt={user.name ?? "User"}
+                width={32}
+                height={32}
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (

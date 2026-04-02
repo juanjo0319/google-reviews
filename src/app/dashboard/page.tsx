@@ -46,10 +46,19 @@ function ReviewListSkeleton() {
 export default async function DashboardPage() {
   const orgData = await getCurrentOrg();
 
-  let hasLocations = false;
-  if (orgData) {
-    hasLocations = await hasConnectedLocations(orgData.orgId);
+  if (!orgData) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-sm text-slate-500 mt-1">Overview of your review performance</p>
+        </div>
+      </div>
+    );
   }
+
+  const orgId = orgData.orgId;
+  const hasLocations = await hasConnectedLocations(orgId);
 
   return (
     <div className="space-y-6">
@@ -60,7 +69,7 @@ export default async function DashboardPage() {
 
       {!hasLocations ? (
         <Suspense>
-          <SetupPrompt />
+          <SetupPrompt orgId={orgId} />
         </Suspense>
       ) : (
         <>
@@ -73,21 +82,21 @@ export default async function DashboardPage() {
               </div>
             }
           >
-            <StatCards />
+            <StatCards orgId={orgId} />
           </Suspense>
 
           <div className="grid lg:grid-cols-5 gap-6">
             <div className="lg:col-span-3">
               <Suspense fallback={<ReviewListSkeleton />}>
-                <RecentReviews />
+                <RecentReviews orgId={orgId} />
               </Suspense>
             </div>
             <div className="lg:col-span-2 space-y-6">
               <Suspense>
-                <SentimentTrend />
+                <SentimentTrend orgId={orgId} />
               </Suspense>
               <Suspense fallback={<ReviewListSkeleton />}>
-                <ActionRequired />
+                <ActionRequired orgId={orgId} />
               </Suspense>
             </div>
           </div>

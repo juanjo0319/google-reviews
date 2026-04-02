@@ -1,9 +1,6 @@
-"use client";
-
 import { forwardRef } from "react";
 import Link from "next/link";
 import { cva, type VariantProps } from "class-variance-authority";
-import * as m from "motion/react-client";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,12 +40,6 @@ export type ButtonProps = VariantProps<typeof buttonVariants> & {
   "aria-label"?: string;
 };
 
-const springTransition = {
-  type: "spring" as const,
-  stiffness: 400,
-  damping: 17,
-};
-
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(
     {
@@ -76,33 +67,23 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     if (href) {
       return (
-        <m.div
-          className="inline-flex"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={springTransition}
-        >
-          <Link href={href} className={classes} aria-label={ariaLabel}>
-            {content}
-          </Link>
-        </m.div>
+        <Link href={href} className={cn("hover:scale-[1.02] active:scale-[0.98] transition-transform", classes)} aria-label={ariaLabel}>
+          {content}
+        </Link>
       );
     }
 
     return (
-      <m.button
+      <button
         ref={ref}
         type={type}
-        className={classes}
+        className={cn("hover:scale-[1.02] active:scale-[0.98] transition-transform", classes)}
         disabled={loading || disabled}
         onClick={onClick}
         aria-label={ariaLabel}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        transition={springTransition}
       >
         {content}
-      </m.button>
+      </button>
     );
   }
 );

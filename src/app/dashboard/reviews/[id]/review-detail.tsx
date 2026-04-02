@@ -9,6 +9,7 @@ import {
   FileText,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { ResponseEditor } from "./response-editor";
 
 // --- Types ---
@@ -121,7 +122,7 @@ export function ReviewDetail({ review, responses, auditLog, userRole, reviewId }
             {/* Reviewer info */}
             <div className="flex items-start gap-3 mb-4">
               {review.reviewerPhoto ? (
-                <img src={review.reviewerPhoto} alt={review.reviewerName} className="h-12 w-12 rounded-full object-cover" />
+                <Image src={review.reviewerPhoto} alt={review.reviewerName} width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
               ) : (
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-lg font-semibold text-slate-600">
                   {review.reviewerName[0]}

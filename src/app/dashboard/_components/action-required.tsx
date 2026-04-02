@@ -1,6 +1,5 @@
 import { Star, TrendingUp, AlertTriangle, ArrowUpRight, Clock } from "lucide-react";
 import Link from "next/link";
-import { getCurrentOrg } from "@/lib/auth/permissions";
 import { getUrgentReviews } from "@/lib/services/reviews";
 
 function StarDisplay({ count }: { count: number }) {
@@ -30,11 +29,8 @@ function formatTimeAgo(date: string): string {
   return days + "d ago";
 }
 
-export async function ActionRequired() {
-  const orgData = await getCurrentOrg();
-  if (!orgData) return null;
-
-  const unrespondedUrgent = await getUrgentReviews(orgData.orgId);
+export async function ActionRequired({ orgId }: { orgId: string }) {
+  const unrespondedUrgent = await getUrgentReviews(orgId);
 
   if (unrespondedUrgent.length === 0) {
     return (

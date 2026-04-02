@@ -1,10 +1,6 @@
-import { getCurrentOrg } from "@/lib/auth/permissions";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function SentimentTrend() {
-  const orgData = await getCurrentOrg();
-  if (!orgData) return null;
-
+export async function SentimentTrend({ orgId }: { orgId: string }) {
   const supabase = createAdminClient();
   const now = new Date();
 
@@ -21,7 +17,7 @@ export async function SentimentTrend() {
   const { data: reviews } = await supabase
     .from("reviews")
     .select("sentiment, created_at")
-    .eq("organization_id", orgData.orgId)
+    .eq("organization_id", orgId)
     .gte("created_at", weekAgo.toISOString());
 
   const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

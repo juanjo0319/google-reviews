@@ -1,6 +1,5 @@
 import { Star, Inbox, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { getCurrentOrg } from "@/lib/auth/permissions";
 import { getRecentReviews } from "@/lib/services/reviews";
 
 const sentimentColors: Record<string, string> = {
@@ -36,11 +35,8 @@ function formatTimeAgo(date: string): string {
   return days + "d ago";
 }
 
-export async function RecentReviews() {
-  const orgData = await getCurrentOrg();
-  if (!orgData) return null;
-
-  const { reviews, responseMap } = await getRecentReviews(orgData.orgId, 5);
+export async function RecentReviews({ orgId }: { orgId: string }) {
+  const { reviews, responseMap } = await getRecentReviews(orgId, 5);
 
   if (!reviews.length) {
     return (

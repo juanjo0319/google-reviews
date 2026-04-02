@@ -57,10 +57,10 @@ async function ReviewsListWithData({
 
   const supabase = createAdminClient();
 
-  // Build query
+  // Build query — include response status via Supabase relation join
   let query = supabase
     .from("reviews")
-    .select("id, reviewer_name, reviewer_photo_url, star_rating, comment, sentiment, review_created_at, created_at, locations(name)")
+    .select("id, reviewer_name, reviewer_photo_url, star_rating, comment, sentiment, review_created_at, created_at, locations(name), responses(status)")
     .eq("organization_id", orgData.orgId)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -109,23 +109,12 @@ async function ReviewsListWithData({
     );
   }
 
-  // Get response status for all reviews
-  const reviewIds = reviews.map((r) => r.id);
-  const { data: responses } = await supabase
-    .from("responses")
-    .select("review_id, status")
-    .in("review_id", reviewIds);
-
-  const responseMap = new Map<string, string>();
-  for (const r of responses ?? []) {
-    responseMap.set(r.review_id, r.status);
-  }
-
-  // Map to ReviewCardData
+  // Map to ReviewCardData — response status comes from the joined responses relation
   const cardData: ReviewCardData[] = reviews.map((r) => {
-    const status = responseMap.get(r.id);
-    const responseStatus: "responded" | "pending" | "unresponded" = status
-      ? status === "published" ? "responded" : "pending"
+    const responses = (r.responses ?? []) as unknown as { status: string }[];
+    const latestStatus = responses[0]?.status;
+    const responseStatus: "responded" | "pending" | "unresponded" = latestStatus
+      ? latestStatus === "published" ? "responded" : "pending"
       : "unresponded";
 
     return {
@@ -141,7 +130,7 @@ async function ReviewsListWithData({
     };
   });
 
-  // Client-side status filter (since it depends on responses join)
+  // Apply status filter
   let filtered = cardData;
   if (searchParams.status === "responded") {
     filtered = filtered.filter((r) => r.responseStatus === "responded");

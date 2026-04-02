@@ -2,6 +2,7 @@
 
 import { Star, Reply } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 const sentimentConfig = {
@@ -63,9 +64,11 @@ export function ReviewCard({
         )}
 
         {review.reviewerPhoto ? (
-          <img
+          <Image
             src={review.reviewerPhoto}
             alt={review.reviewerName}
+            width={40}
+            height={40}
             className="h-10 w-10 rounded-full object-cover shrink-0"
           />
         ) : (
