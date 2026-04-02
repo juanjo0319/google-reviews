@@ -14,7 +14,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showForgotMsg, setShowForgotMsg] = useState(false);
+  const _forgotUnused = null; // removed inline forgot message
   const router = useRouter();
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified");

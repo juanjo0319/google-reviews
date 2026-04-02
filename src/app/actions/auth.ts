@@ -134,3 +134,125 @@ export async function register(
 
   return { success: true };
 }
+
+// --- Password Reset ---
+
+const resetRequestSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export async function requestPasswordReset(
+  _prev: RegisterResult | null,
+  formData: FormData
+): Promise<RegisterResult> {
+  const parsed = resetRequestSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  const { email } = parsed.data;
+  const supabase = createAdminClient();
+  const naSchema = nextAuthSchema(supabase);
+
+  const { data: user } = await naSchema
+    .from("users")
+    .select("id, name")
+    .eq("email", email)
+    .single();
+
+  // Always return success to prevent email enumeration
+  if (!user) return { success: true };
+
+  const rawToken = crypto.randomUUID();
+  const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+  const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await naSchema.from("verification_tokens").insert({
+    identifier: "reset:" + email,
+    token: hashedToken,
+    expires: expires.toISOString(),
+  });
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const baseUrl = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL ?? "ReviewAI <noreply@reviewai.app>",
+        to: email,
+        subject: "Reset your ReviewAI password",
+        html:
+          '<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">' +
+          "<h2>Password Reset</h2>" +
+          "<p>Hi " + (user.name ?? "there") + ", we received a request to reset your password.</p>" +
+          '<a href="' + baseUrl + "/auth/reset-password?token=" + rawToken + '"' +
+          ' style="display: inline-block; background: #1a73e8; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">' +
+          "Reset Password</a>" +
+          '<p style="color: #666; font-size: 14px; margin-top: 16px;">' +
+          "This link expires in 1 hour. If you didn't request this, you can ignore this email.</p></div>",
+      });
+    } catch (error) {
+      console.error("Error sending reset email:", error);
+    }
+  }
+
+  return { success: true };
+}
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export async function resetPassword(
+  _prev: RegisterResult | null,
+  formData: FormData
+): Promise<RegisterResult> {
+  const parsed = resetPasswordSchema.safeParse({
+    token: formData.get("token"),
+    password: formData.get("password"),
+  });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  const { token, password } = parsed.data;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const supabase = createAdminClient();
+  const naSchema = nextAuthSchema(supabase);
+
+  const { data: tokenRecord } = await naSchema
+    .from("verification_tokens")
+    .select("identifier, token, expires")
+    .eq("token", hashedToken)
+    .single();
+
+  if (!tokenRecord || !String(tokenRecord.identifier).startsWith("reset:")) {
+    return { success: false, error: "Invalid or expired reset link." };
+  }
+
+  if (new Date(tokenRecord.expires) < new Date()) {
+    await naSchema.from("verification_tokens").delete().eq("token", hashedToken);
+    return { success: false, error: "Reset link has expired. Please request a new one." };
+  }
+
+  const email = String(tokenRecord.identifier).replace("reset:", "");
+
+  const { data: user } = await naSchema
+    .from("users")
+    .select("id")
+    .eq("email", email)
+    .single();
+
+  if (!user) return { success: false, error: "User not found." };
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  await supabase.from("users").update({ password_hash: passwordHash }).eq("id", user.id);
+
+  await naSchema.from("verification_tokens").delete().eq("token", hashedToken);
+
+  return { success: true };
+}
