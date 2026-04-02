@@ -89,19 +89,35 @@ export default async function LocationsPage() {
   );
 
   if (fetchError) {
+    const isQuotaError = fetchError.includes("429") || fetchError.includes("Quota") || fetchError.includes("RESOURCE_EXHAUSTED");
+
     return (
       <div className="rounded-2xl bg-white border border-slate-100 p-8 text-center">
-        <AlertCircle className="h-10 w-10 text-red-400 mx-auto mb-3" />
+        <AlertCircle className={"h-10 w-10 mx-auto mb-3 " + (isQuotaError ? "text-amber-400" : "text-red-400")} />
         <p className="text-sm font-medium text-slate-700 mb-1">
-          Failed to load locations
+          {isQuotaError ? "Google API access pending" : "Failed to load locations"}
         </p>
-        <p className="text-xs text-slate-500 mb-4">{fetchError}</p>
-        <a
-          href="/api/google/connect"
-          className="inline-flex rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
-        >
-          Reconnect Google Account
-        </a>
+        <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+          {isQuotaError
+            ? "Google requires approval before apps can access Business Profile data. This usually takes 1-3 business days. Your Google account is connected and ready — locations will appear automatically once approved."
+            : fetchError}
+        </p>
+        {!isQuotaError && (
+          <a
+            href="/api/google/connect"
+            className="inline-flex rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
+          >
+            Reconnect Google Account
+          </a>
+        )}
+        {isQuotaError && (
+          <div className="inline-flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm text-amber-700">
+            <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Waiting for Google approval — check back soon
+          </div>
+        )}
       </div>
     );
   }
