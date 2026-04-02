@@ -6,6 +6,7 @@ import { SentimentTrend } from "./_components/sentiment-trend";
 import { RecentReviews } from "./_components/recent-reviews";
 import { ActionRequired } from "./_components/action-required";
 import { SetupPrompt } from "./_components/setup-prompt";
+import { RatingGoalWrapper } from "./_components/rating-goal-wrapper";
 
 // --- Skeleton loaders ---
 
@@ -92,6 +93,9 @@ export default async function DashboardPage() {
               </Suspense>
             </div>
             <div className="lg:col-span-2 space-y-6">
+              <Suspense>
+                <RatingGoalWrapper orgId={orgId} />
+              </Suspense>
               <Suspense>
                 <SentimentTrend orgId={orgId} />
               </Suspense>
