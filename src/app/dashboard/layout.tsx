@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getCurrentOrg, getUserOrganizations } from "@/lib/auth/permissions";
 import { ensureOrganization } from "@/app/actions/organizations";
@@ -21,6 +22,24 @@ export default async function DashboardLayout({
 
   // Ensure user has at least one organization
   await ensureOrganization();
+
+  // Check if user has completed onboarding
+  const headerStore = await headers();
+  const pathname = headerStore.get("x-next-pathname") ?? headerStore.get("x-invoke-path") ?? "";
+  const isOnboardingPage = pathname.includes("/dashboard/onboarding");
+
+  if (!isOnboardingPage) {
+    const supabaseAdmin = createAdminClient();
+    const { data: userData } = await supabaseAdmin
+      .from("users")
+      .select("onboarding_completed")
+      .eq("id", session.user.id)
+      .single();
+
+    if (userData && !userData.onboarding_completed) {
+      redirect("/dashboard/onboarding");
+    }
+  }
 
   const [currentOrgData, organizations] = await Promise.all([
     getCurrentOrg(),
