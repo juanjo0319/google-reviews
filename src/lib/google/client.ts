@@ -1,6 +1,7 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { GoogleTokenStore } from "./token-store";
+import { request } from "./transport";
 
-// --- Google star rating enum → integer mapping ---
+// --- Google star rating enum -> integer mapping ---
 
 const STAR_RATING_MAP: Record<string, number> = {
   ONE: 1,
@@ -64,199 +65,34 @@ export interface ListReviewsResponse {
   nextPageToken?: string;
 }
 
-// --- Token bucket rate limiter (5 req/sec) ---
-
-class TokenBucket {
-  private tokens: number;
-  private lastRefill: number;
-  private readonly maxTokens: number;
-  private readonly refillRate: number; // tokens per ms
-
-  constructor(maxPerSecond: number) {
-    this.maxTokens = maxPerSecond;
-    this.tokens = maxPerSecond;
-    this.refillRate = maxPerSecond / 1000;
-    this.lastRefill = Date.now();
-  }
-
-  async acquire(): Promise<void> {
-    this.refill();
-    if (this.tokens >= 1) {
-      this.tokens -= 1;
-      return;
-    }
-    // Wait until a token is available
-    const waitMs = Math.ceil((1 - this.tokens) / this.refillRate);
-    await new Promise((resolve) => setTimeout(resolve, waitMs));
-    this.refill();
-    this.tokens -= 1;
-  }
-
-  private refill() {
-    const now = Date.now();
-    const elapsed = now - this.lastRefill;
-    this.tokens = Math.min(this.maxTokens, this.tokens + elapsed * this.refillRate);
-    this.lastRefill = now;
-  }
-}
-
-// Shared rate limiter: 5 requests/sec to stay under 300 QPM
-const rateLimiter = new TokenBucket(5);
-
-// --- Exponential backoff with jitter ---
-
-async function backoff(attempt: number): Promise<void> {
-  const baseMs = Math.min(1000 * Math.pow(2, attempt), 30000);
-  const jitter = Math.random() * baseMs * 0.5;
-  await new Promise((resolve) => setTimeout(resolve, baseMs + jitter));
-}
-
 // --- GBP Client ---
 
 export class GoogleBusinessProfileClient {
-  private organizationId: string;
-  private accessToken: string | null = null;
-  private refreshToken: string | null = null;
-  private expiresAt: Date | null = null;
-  private tokenRecordId: string | null = null;
+  private tokenStore: GoogleTokenStore;
 
   constructor(organizationId: string) {
-    this.organizationId = organizationId;
+    this.tokenStore = new GoogleTokenStore(organizationId);
   }
 
   /** Load tokens from DB. Must be called before making API requests. */
   async initialize(): Promise<void> {
-    const supabase = createAdminClient();
-    const { data, error } = await supabase
-      .from("google_oauth_tokens")
-      .select("id, access_token, refresh_token, expires_at")
-      .eq("organization_id", this.organizationId)
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error || !data) {
-      throw new Error(
-        `No Google OAuth tokens found for organization ${this.organizationId}`
-      );
-    }
-
-    this.tokenRecordId = data.id;
-    this.accessToken = data.access_token;
-    this.refreshToken = data.refresh_token;
-    this.expiresAt = data.expires_at ? new Date(data.expires_at) : null;
+    await this.tokenStore.load();
   }
 
-  /** Refresh the access token if expired or about to expire (5-min buffer). */
-  private async ensureValidToken(): Promise<string> {
-    if (!this.refreshToken) {
-      throw new Error("No refresh token available. User must re-authenticate.");
-    }
-
-    const bufferMs = 5 * 60 * 1000; // 5 minutes
-    const needsRefresh =
-      !this.accessToken ||
-      !this.expiresAt ||
-      this.expiresAt.getTime() - Date.now() < bufferMs;
-
-    if (!needsRefresh) {
-      return this.accessToken!;
-    }
-
-    const response = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: process.env.GOOGLE_CLIENT_ID!,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-        grant_type: "refresh_token",
-        refresh_token: this.refreshToken,
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        `Token refresh failed: ${data.error} - ${data.error_description}`
-      );
-    }
-
-    this.accessToken = data.access_token;
-    this.expiresAt = new Date(Date.now() + data.expires_in * 1000);
-    if (data.refresh_token) {
-      this.refreshToken = data.refresh_token;
-    }
-
-    // Persist updated tokens
-    if (this.tokenRecordId) {
-      const supabase = createAdminClient();
-      await supabase
-        .from("google_oauth_tokens")
-        .update({
-          access_token: this.accessToken ?? undefined,
-          refresh_token: this.refreshToken ?? undefined,
-          expires_at: this.expiresAt.toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", this.tokenRecordId);
-    }
-
-    return this.accessToken!;
-  }
-
-  /**
-   * Make an authenticated API request with rate limiting and retries.
-   * Retries on 429 (rate limit) and 403 (quota exceeded) with exponential backoff.
-   */
-  private async request<T>(
-    url: string,
-    options: RequestInit = {},
-    maxRetries = 3
-  ): Promise<T> {
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      await rateLimiter.acquire();
-      const token = await this.ensureValidToken();
-
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
-      });
-
-      if (response.ok) {
-        // Some DELETE endpoints return 204 with no body
-        if (response.status === 204) return {} as T;
-        return response.json();
-      }
-
-      // Retryable errors
-      if (
-        (response.status === 429 || response.status === 403) &&
-        attempt < maxRetries
-      ) {
-        console.warn(
-          `GBP API ${response.status} on ${url}, retrying (attempt ${attempt + 1}/${maxRetries})`
-        );
-        await backoff(attempt);
-        continue;
-      }
-
-      const errorBody = await response.text();
-      throw new Error(
-        `GBP API error ${response.status}: ${errorBody}`
-      );
-    }
-
-    throw new Error("Max retries exceeded");
+  /** Authenticated request helper using token store + transport. */
+  private req<T>(url: string, options: RequestInit = {}, maxRetries = 3): Promise<T> {
+    return request<T>(
+      url,
+      () => this.tokenStore.ensureValidToken(),
+      options,
+      maxRetries
+    );
   }
 
   // --- Account Management API v1 ---
 
   async listAccounts(): Promise<GoogleAccount[]> {
-    const data = await this.request<{ accounts?: GoogleAccount[] }>(
+    const data = await this.req<{ accounts?: GoogleAccount[] }>(
       "https://mybusinessaccountmanagement.googleapis.com/v1/accounts"
     );
     return data.accounts ?? [];
@@ -265,7 +101,7 @@ export class GoogleBusinessProfileClient {
   // --- Business Information API v1 ---
 
   async listLocations(accountId: string): Promise<GoogleLocation[]> {
-    const data = await this.request<{ locations?: GoogleLocation[] }>(
+    const data = await this.req<{ locations?: GoogleLocation[] }>(
       `https://mybusinessbusinessinformation.googleapis.com/v1/${accountId}/locations?readMask=name,title,storefrontAddress,phoneNumbers,metadata`
     );
     return data.locations ?? [];
@@ -286,13 +122,13 @@ export class GoogleBusinessProfileClient {
     });
     if (pageToken) params.set("pageToken", pageToken);
 
-    return this.request<ListReviewsResponse>(
+    return this.req<ListReviewsResponse>(
       `https://mybusiness.googleapis.com/v4/${accountId}/${locationId}/reviews?${params}`
     );
   }
 
   async getReview(reviewName: string): Promise<GoogleReview> {
-    return this.request<GoogleReview>(
+    return this.req<GoogleReview>(
       `https://mybusiness.googleapis.com/v4/${reviewName}`
     );
   }
@@ -301,7 +137,7 @@ export class GoogleBusinessProfileClient {
     reviewName: string,
     comment: string
   ): Promise<{ comment: string; updateTime: string }> {
-    return this.request(
+    return this.req(
       `https://mybusiness.googleapis.com/v4/${reviewName}/reply`,
       {
         method: "PUT",
@@ -311,7 +147,7 @@ export class GoogleBusinessProfileClient {
   }
 
   async deleteReply(reviewName: string): Promise<void> {
-    await this.request(
+    await this.req(
       `https://mybusiness.googleapis.com/v4/${reviewName}/reply`,
       { method: "DELETE" }
     );
@@ -321,7 +157,7 @@ export class GoogleBusinessProfileClient {
     accountId: string,
     locationNames: string[]
   ): Promise<{ locationReviews: { reviews: GoogleReview[] }[] }> {
-    return this.request(
+    return this.req(
       `https://mybusiness.googleapis.com/v4/${accountId}/locations:batchGetReviews`,
       {
         method: "POST",
