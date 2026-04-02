@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Mail, MoreVertical, Shield, UserPlus, Crown, X } from "lucide-react";
-import { inviteMember, updateMemberRole, removeMember } from "@/app/actions/organizations";
+import { inviteMember, updateMemberRole, removeMember } from "@/app/actions/orgs/membership";
 import { useRouter } from "next/navigation";
 
 export interface TeamMember {

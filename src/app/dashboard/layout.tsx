@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getCurrentOrg, getUserOrganizations } from "@/lib/auth/permissions";
-import { ensureOrganization } from "@/app/actions/organizations";
+import { ensureOrganization } from "@/app/actions/orgs/lifecycle";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";

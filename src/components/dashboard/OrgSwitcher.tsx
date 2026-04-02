@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { ChevronDown, Building2, Check, Plus } from "lucide-react";
-import { switchOrganization } from "@/app/actions/organizations";
+import { switchOrganization } from "@/app/actions/orgs/lifecycle";
 import { useRouter } from "next/navigation";
 
 interface OrgSwitcherProps {

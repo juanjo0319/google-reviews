@@ -18,10 +18,12 @@ import {
   rejectResponse,
   publishResponseAction,
   deletePublishedResponseAction,
-  updateResponseContent,
   discardResponse,
+} from "@/app/actions/reviews/workflow";
+import {
+  updateResponseContent,
   saveManualResponse,
-} from "@/app/actions/reviews";
+} from "@/app/actions/reviews/content";
 
 // --- Types ---
 

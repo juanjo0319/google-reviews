@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { Sparkles, CheckCheck, X, Loader2 } from "lucide-react";
-import { bulkGenerateResponses, bulkMarkAsRead } from "@/app/actions/reviews";
+import { bulkGenerateResponses, bulkMarkAsRead } from "@/app/actions/reviews/bulk";
 import { useRouter } from "next/navigation";
 
 interface BulkActionBarProps {
