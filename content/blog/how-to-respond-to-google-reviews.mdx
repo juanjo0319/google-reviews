@@ -43,19 +43,19 @@ Your review responses are read by hundreds of future customers. Every response i
 
 Regardless of whether you're responding to a glowing 5-star review or a scorching 1-star complaint, every great response shares five elements:
 
-<StepProcess steps={[
-  { number: 1, title: "Personalization", description: "Use the reviewer's name. \"Dear valued customer\" tells everyone you didn't actually read the review." },
-  { number: 2, title: "Gratitude", description: "Thank them for taking time to leave feedback. Even angry reviewers gave you something valuable." },
-  { number: 3, title: "Specificity", description: "Reference something they actually mentioned. This proves you read their review and care about the details." },
-  { number: 4, title: "Action", description: "State what you'll do next, or invite them back with a specific reason to return." },
-  { number: 5, title: "Warmth", description: "Sign off with a real name and role. Humans connect with humans, not brands." }
-]} />
+<Steps>
+  <Step number={1} title="Personalization" description="Use the reviewer's name. &quot;Dear valued customer&quot; tells everyone you didn't actually read the review." />
+  <Step number={2} title="Gratitude" description="Thank them for taking time to leave feedback. Even angry reviewers gave you something valuable." />
+  <Step number={3} title="Specificity" description="Reference something they actually mentioned. This proves you read their review and care about the details." />
+  <Step number={4} title="Action" description="State what you'll do next, or invite them back with a specific reason to return." />
+  <Step number={5} title="Warmth" description="Sign off with a real name and role. Humans connect with humans, not brands." last />
+</Steps>
 
 Here's what this looks like in practice:
 
-<ComparisonTable items={[
-  { bad: "Thank you for your feedback. We appreciate your business.", good: "Sarah, thank you for such a kind review! We're glad the risotto was a hit — Chef Marco will be thrilled to hear that. We're launching a new seasonal menu next month, and we'd love for you to be one of the first to try it. Hope to see you again soon! — James, GM", label: "Review response" }
-]} />
+<DoVsDont>
+  <DoVsDontRow bad="Thank you for your feedback. We appreciate your business." good="Sarah, thank you for such a kind review! We're glad the risotto was a hit — Chef Marco will be thrilled to hear that. We're launching a new seasonal menu next month, and we'd love for you to be one of the first to try it. Hope to see you again soon! — James, GM" />
+</DoVsDont>
 
 Why does the good version work? Future customers reading it learn three things: this business pays attention, they have a chef who cares about food quality, and there's a reason to visit again soon. That's **marketing disguised as a reply**.
 
@@ -117,13 +117,13 @@ This is the section most readers are here for. Let's make it extremely actionabl
 
 ### The 5-Step Framework for Negative Review Responses
 
-<StepProcess steps={[
-  { number: 1, title: "BREATHE", description: "Never respond emotionally. Close the tab. Walk away for at least an hour. The worst responses in history were written in the first five minutes." },
-  { number: 2, title: "ACKNOWLEDGE", description: "Name the specific issue they raised. \"We're sorry you had a bad experience\" is vague. \"We're sorry about the 40-minute wait for your appetizers\" shows you actually read their review." },
-  { number: 3, title: "APOLOGIZE", description: "Genuine, not corporate. \"We dropped the ball\" beats \"We're sorry you feel that way\" every single time. The second phrase implies the problem is their perception, not your performance." },
-  { number: 4, title: "ACT", description: "State the specific action you're taking. \"I'm personally reviewing this with our kitchen team this week\" is concrete. \"We'll strive to do better\" is meaningless." },
-  { number: 5, title: "OFFLINE", description: "Provide a direct contact — a real name, email, or phone number — to resolve the issue privately. Never argue in public." }
-]} />
+<Steps>
+  <Step number={1} title="BREATHE" description="Never respond emotionally. Close the tab. Walk away for at least an hour. The worst responses in history were written in the first five minutes." />
+  <Step number={2} title="ACKNOWLEDGE" description="Name the specific issue they raised. &quot;We're sorry you had a bad experience&quot; is vague. &quot;We're sorry about the 40-minute wait for your appetizers&quot; shows you actually read their review." />
+  <Step number={3} title="APOLOGIZE" description="Genuine, not corporate. &quot;We dropped the ball&quot; beats &quot;We're sorry you feel that way&quot; every single time. The second phrase implies the problem is their perception, not your performance." />
+  <Step number={4} title="ACT" description="State the specific action you're taking. &quot;I'm personally reviewing this with our kitchen team this week&quot; is concrete. &quot;We'll strive to do better&quot; is meaningless." />
+  <Step number={5} title="OFFLINE" description="Provide a direct contact — a real name, email, or phone number — to resolve the issue privately. Never argue in public." last />
+</Steps>
 
 ### Negative Review Response Templates
 
@@ -193,12 +193,12 @@ Neutral reviews are tricky because they're tepid. The customer doesn't love you,
 
 Speed matters more than most businesses realize. Here's the impact of response timing:
 
-<StepProcess steps={[
-  { number: 1, title: "Within 1 Hour — Best", description: "Shows exceptional customer care. Creates the strongest positive impression on future readers. Ideal for negative reviews that need damage control." },
-  { number: 2, title: "Within 24 Hours — Great", description: "Measurably stronger local pack performance. Signals to Google that your business is actively engaged. The sweet spot for most businesses." },
-  { number: 3, title: "Within 7 Days — Acceptable", description: "Meets the minimum expectation of 53% of customers. Still better than not responding, but you're leaving SEO value on the table." },
-  { number: 4, title: "After 7 Days — Damaging", description: "Signals neglect to both Google and customers. A late response on a negative review may have already cost you several potential customers." }
-]} />
+<Steps>
+  <Step number={1} title="Within 1 Hour — Best" description="Shows exceptional customer care. Creates the strongest positive impression on future readers. Ideal for negative reviews that need damage control." />
+  <Step number={2} title="Within 24 Hours — Great" description="Measurably stronger local pack performance. Signals to Google that your business is actively engaged. The sweet spot for most businesses." />
+  <Step number={3} title="Within 7 Days — Acceptable" description="Meets the minimum expectation of 53% of customers. Still better than not responding, but you're leaving SEO value on the table." />
+  <Step number={4} title="After 7 Days — Damaging" description="Signals neglect to both Google and customers. A late response on a negative review may have already cost you several potential customers." last />
+</Steps>
 
 <ProTip>
 Dedicate 15 minutes each morning to review responses. Open your Google Business Profile, scan for new reviews, and knock them out before your first meeting. Make it a routine, like checking email.
@@ -255,11 +255,11 @@ Let's be honest about the math.
 
 For a multi-location business, multiply that by every location. Here's how the three approaches compare:
 
-<ComparisonTable items={[
-  { bad: "Manual — 8 min per review. Personal touch, but doesn't scale. Works for <20 reviews/month.", good: "AI-Powered — 15 seconds per review. Personalized responses that match your brand voice. Scales to any volume.", label: "Speed" },
-  { bad: "Templates — 2 min per review. Faster, but customers notice copy-paste. Feels generic and damages trust.", good: "AI-Powered — Every response is unique. Reads the actual review content and crafts a contextual reply.", label: "Quality" },
-  { bad: "Both manual and templates break down at 50+ reviews. You either burn hours or sound robotic.", good: "AI handles 500 reviews/month the same as 5. Consistent quality regardless of volume.", label: "Scale" }
-]} />
+<DoVsDont>
+  <DoVsDontRow bad="Manual — 8 min per review. Personal touch, but doesn't scale. Works for <20 reviews/month." good="AI-Powered — 15 seconds per review. Personalized responses that match your brand voice. Scales to any volume." />
+  <DoVsDontRow bad="Templates — 2 min per review. Faster, but customers notice copy-paste. Feels generic and damages trust." good="AI-Powered — Every response is unique. Reads the actual review content and crafts a contextual reply." />
+  <DoVsDontRow bad="Both manual and templates break down at 50+ reviews. You either burn hours or sound robotic." good="AI handles 500 reviews/month the same as 5. Consistent quality regardless of volume." />
+</DoVsDont>
 
 RevUp.ai uses Claude AI to draft review responses in your brand voice in under 5 seconds. [Try the free AI Review Response Generator](/tools/review-response-generator) to see it in action — paste any review and judge the quality yourself.
 

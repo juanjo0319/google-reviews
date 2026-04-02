@@ -15,6 +15,8 @@ import { ComparisonTable } from "@/components/blog/ComparisonTable";
 import { TemplateCard } from "@/components/blog/TemplateCard";
 import { ProTip } from "@/components/blog/ProTip";
 import { StepProcess } from "@/components/blog/StepProcess";
+import { Steps, Step } from "@/components/blog/Steps";
+import { DoVsDont, DoVsDontRow } from "@/components/blog/DoVsDont";
 import { QuoteHighlight } from "@/components/blog/QuoteHighlight";
 import { WarningBox } from "@/components/blog/WarningBox";
 import { BlogCTA } from "@/components/blog/BlogCTA";
@@ -26,6 +28,10 @@ const mdxComponents = {
   TemplateCard,
   ProTip,
   StepProcess,
+  Steps,
+  Step,
+  DoVsDont,
+  DoVsDontRow,
   QuoteHighlight,
   WarningBox,
   BlogCTA,
@@ -133,6 +139,11 @@ export default async function BlogPostPage({
                 <MDXRemote
                   source={post.content}
                   components={mdxComponents}
+                  options={{
+                    mdxOptions: {
+                      development: process.env.NODE_ENV === "development",
+                    },
+                  }}
                 />
               </div>
 

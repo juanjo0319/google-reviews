@@ -10,7 +10,12 @@ interface StepProcessProps {
   steps: Step[];
 }
 
-export function StepProcess({ steps }: StepProcessProps) {
+export function StepProcess({ steps, children }: StepProcessProps & { children?: React.ReactNode }) {
+  // If steps prop is missing (MDX can't pass array literals), render children as-is
+  if (!steps || !Array.isArray(steps) || steps.length === 0) {
+    return <div className={cn("space-y-0 my-8")}>{children}</div>;
+  }
+
   return (
     <div className={cn("space-y-0 my-8")}>
       {steps.map((step, index) => {

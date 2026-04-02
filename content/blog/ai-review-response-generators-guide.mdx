@@ -34,11 +34,11 @@ The best tools integrate directly with [Google Business Profile](/blog/how-to-re
 
 ## How AI Review Responses Actually Work
 
-<StepProcess steps={[
-  { number: 1, title: "Understand the Review", description: "Sentiment analysis (positive/negative/mixed), theme extraction (food quality, staff, pricing), and urgency assessment (health concern vs. minor complaint). A 3-star review saying 'food was great but the wait was unacceptable' gets tagged as both praise and frustration." },
-  { number: 2, title: "Generate a Contextual Response", description: "The AI uses your brand voice settings, past approved responses as style references, and the review analysis to compose a reply. The underlying model matters — Claude and GPT-4 produce significantly more natural responses than smaller models." },
-  { number: 3, title: "Human Review & Publishing", description: "Every draft goes through your approval. You scan, tweak if needed (15-30 seconds), and publish directly to Google via the GBP API. Never auto-publish without human review." }
-]} />
+<Steps>
+  <Step number={1} title="Understand the Review" description="Sentiment analysis (positive/negative/mixed), theme extraction (food quality, staff, pricing), and urgency assessment (health concern vs. minor complaint). A 3-star review saying 'food was great but the wait was unacceptable' gets tagged as both praise and frustration." />
+  <Step number={2} title="Generate a Contextual Response" description="The AI uses your brand voice settings, past approved responses as style references, and the review analysis to compose a reply. The underlying model matters — Claude and GPT-4 produce significantly more natural responses than smaller models." />
+  <Step number={3} title="Human Review & Publishing" description="Every draft goes through your approval. You scan, tweak if needed (15-30 seconds), and publish directly to Google via the GBP API. Never auto-publish without human review." last />
+</Steps>
 
 ---
 
@@ -104,9 +104,9 @@ Same negative review, two very different AI outputs:
 
 *"Waited 45 minutes for our entrees on a Wednesday night when the place was half empty. The pasta was cold when it finally arrived. Server didn't seem to care. Won't be back."*
 
-<ComparisonTable items={[
-  { bad: "Thank you for your feedback. We're sorry to hear about your experience. We strive to provide excellent service and will use your comments to improve. We hope you'll give us another chance.", good: "Hi Marcus, I want to apologize for your Wednesday evening. A 45-minute wait when we weren't even busy is unacceptable, and cold pasta makes it worse. I've spoken with our kitchen manager about timing, and I'm addressing the service concern with our front-of-house team. I'd love to invite you back as my guest — reach out at david@restaurant.com. — David, GM", label: "Response quality" }
-]} />
+<DoVsDont>
+  <DoVsDontRow bad="Thank you for your feedback. We're sorry to hear about your experience. We strive to provide excellent service and will use your comments to improve. We hope you'll give us another chance." good="Hi Marcus, I want to apologize for your Wednesday evening. A 45-minute wait when we weren't even busy is unacceptable, and cold pasta makes it worse. I've spoken with our kitchen manager about timing, and I'm addressing the service concern with our front-of-house team. I'd love to invite you back as my guest — reach out at david@restaurant.com. — David, GM" />
+</DoVsDont>
 
 The mediocre version could apply to any review at any restaurant. The excellent version references the specific wait time, the day, the cold pasta, and the server issue.
 
