@@ -14,7 +14,6 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const _forgotUnused = null; // removed inline forgot message
   const router = useRouter();
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified");
@@ -72,16 +71,6 @@ function LoginForm() {
           </div>
         )}
 
-        {/* Forgot password banner */}
-        {showForgotMsg && (
-          <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-            {t("forgotPasswordMsg")}{" "}
-            <a href="mailto:support@reviewai.app" className="font-semibold underline">
-              support@reviewai.app
-            </a>
-          </div>
-        )}
-
         {/* Error banner */}
         {error && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -119,13 +108,12 @@ function LoginForm() {
                 >
                   {t("password")}
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotMsg(true)}
+                <Link
+                  href="/forgot-password"
                   className="text-xs font-medium text-primary hover:text-primary-dark"
                 >
                   {t("forgotPassword")}
-                </button>
+                </Link>
               </div>
               <input
                 id="password"

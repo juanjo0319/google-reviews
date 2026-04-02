@@ -86,6 +86,7 @@ export const authConfig = {
         "/",
         "/login",
         "/signup",
+        "/forgot-password",
         "/pricing",
         "/about",
       ];
