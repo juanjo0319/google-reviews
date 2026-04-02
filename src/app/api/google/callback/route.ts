@@ -73,9 +73,25 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Get current organization
+  // Get current organization (try cookie first, fall back to first membership)
+  let orgId: string | null = null;
   const orgData = await getCurrentOrg();
-  if (!orgData) {
+  if (orgData) {
+    orgId = orgData.orgId;
+  } else {
+    // Fallback: find user's first org from membership
+    const supabaseLookup = createAdminClient();
+    const { data: membership } = await supabaseLookup
+      .from("organization_members")
+      .select("organization_id")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .single();
+    orgId = membership?.organization_id ?? null;
+  }
+
+  if (!orgId) {
     return NextResponse.redirect(
       new URL("/dashboard/settings?error=no_organization", request.url)
     );
@@ -87,7 +103,7 @@ export async function GET(request: NextRequest) {
     .from("google_oauth_tokens")
     .upsert(
       {
-        organization_id: orgData.orgId,
+        organization_id: orgId,
         user_id: session.user.id,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,
@@ -106,8 +122,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Redirect to location selection
-  return NextResponse.redirect(
-    new URL("/dashboard/settings/locations", request.url)
-  );
+  // Redirect — check if user came from onboarding or settings
+  const referer = request.headers.get("referer") ?? "";
+  const redirectTo = referer.includes("onboarding")
+    ? "/dashboard/onboarding?google=connected"
+    : "/dashboard/settings/locations";
+
+  return NextResponse.redirect(new URL(redirectTo, request.url));
 }
