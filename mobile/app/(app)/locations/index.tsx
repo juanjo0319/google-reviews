@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
+import { useCachedFetch } from "@/hooks/useCachedFetch";
+import { cacheKeys } from "@/lib/cache";
 import { api } from "@/lib/api";
 import {
   useGoogleBusinessAuth,
@@ -33,11 +35,24 @@ interface Location {
 export default function LocationsScreen() {
   const colors = useColors();
   const activeOrg = useAuthStore((s) => s.activeOrg);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+
+  const {
+    data: locationsData,
+    loading,
+    refreshing,
+    onRefresh,
+    refresh: fetchLocations,
+  } = useCachedFetch<{ locations: Location[] }>(
+    `/api/mobile/locations?orgId=${activeOrg?.id}`,
+    {
+      cacheKey: cacheKeys.locations(activeOrg?.id ?? ""),
+      skip: !activeOrg,
+    }
+  );
+
+  const locations = locationsData?.locations ?? [];
 
   // Google OAuth
   const [request, response, promptAsync] = useGoogleBusinessAuth();
@@ -65,28 +80,6 @@ export default function LocationsScreen() {
       })
       .finally(() => setConnecting(false));
   }, [response]);
-
-  const fetchLocations = useCallback(async () => {
-    if (!activeOrg) return;
-    try {
-      const result = await api<{ locations: Location[] }>(
-        `/api/mobile/locations?orgId=${activeOrg.id}`
-      );
-      setLocations(result.locations);
-    } catch (err) {
-      console.error("Locations fetch error:", err);
-    }
-  }, [activeOrg?.id]);
-
-  useEffect(() => {
-    fetchLocations().finally(() => setLoading(false));
-  }, [fetchLocations]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchLocations();
-    setRefreshing(false);
-  }, [fetchLocations]);
 
   async function handleSync(locationId: string) {
     if (!activeOrg) return;

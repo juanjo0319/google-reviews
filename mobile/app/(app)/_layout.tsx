@@ -1,9 +1,11 @@
 import { Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Star, MapPin, Bell, Settings } from "lucide-react-native";
 import { useColors } from "@/hooks/useColors";
 
 export default function AppLayout() {
   const colors = useColors();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -22,7 +24,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="(dashboard)"
         options={{
-          title: "Dashboard",
+          title: t("dashboard.nav.dashboard"),
           tabBarIcon: ({ color, size }) => (
             <LayoutDashboard size={size} color={color} />
           ),
@@ -32,7 +34,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="reviews"
         options={{
-          title: "Reviews",
+          title: t("dashboard.nav.reviews"),
           tabBarIcon: ({ color, size }) => <Star size={size} color={color} />,
           headerShown: false,
         }}
@@ -40,7 +42,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="locations"
         options={{
-          title: "Locations",
+          title: t("dashboard.nav.locations"),
           tabBarIcon: ({ color, size }) => <MapPin size={size} color={color} />,
           headerShown: false,
         }}
@@ -48,7 +50,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="notifications"
         options={{
-          title: "Alerts",
+          title: t("dashboard.notifications.title"),
           tabBarIcon: ({ color, size }) => <Bell size={size} color={color} />,
           headerShown: false,
         }}
@@ -56,7 +58,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: t("dashboard.nav.settings"),
           tabBarIcon: ({ color, size }) => <Settings size={size} color={color} />,
           headerShown: false,
         }}

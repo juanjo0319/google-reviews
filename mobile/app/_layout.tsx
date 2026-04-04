@@ -3,6 +3,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
+import "@/i18n"; // Initialize i18n
 import type { EventSubscription } from "expo-modules-core";
 import { useColorScheme, ActivityIndicator, View } from "react-native";
 import "react-native-reanimated";

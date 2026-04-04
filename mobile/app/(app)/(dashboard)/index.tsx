@@ -1,4 +1,3 @@
-import { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,7 +9,8 @@ import {
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
-import { api } from "@/lib/api";
+import { useCachedFetch } from "@/hooks/useCachedFetch";
+import { cacheKeys } from "@/lib/cache";
 
 interface Stats {
   totalReviews: number;
@@ -40,32 +40,15 @@ export default function DashboardScreen() {
   const colors = useColors();
   const activeOrg = useAuthStore((s) => s.activeOrg);
   const user = useAuthStore((s) => s.user);
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchData = useCallback(async () => {
-    if (!activeOrg) return;
-    try {
-      const result = await api<DashboardData>(
-        `/api/mobile/reviews/stats?orgId=${activeOrg.id}`
-      );
-      setData(result);
-    } catch (err) {
-      console.error("Dashboard fetch error:", err);
-    }
-  }, [activeOrg?.id]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchData();
-    setRefreshing(false);
-  }, [fetchData]);
-
   const router = useRouter();
+
+  const { data, refreshing, onRefresh } = useCachedFetch<DashboardData>(
+    `/api/mobile/reviews/stats?orgId=${activeOrg?.id}`,
+    {
+      cacheKey: cacheKeys.dashboardStats(activeOrg?.id ?? ""),
+      skip: !activeOrg,
+    }
+  );
 
   function renderStars(rating: number) {
     return "★".repeat(rating) + "☆".repeat(5 - rating);

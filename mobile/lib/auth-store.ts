@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { api, storeTokens, clearTokens, getStoredTokens, ApiError } from "./api";
 import { registerForPushNotifications, registerDeviceToken, unregisterDeviceToken } from "./notifications";
+import { clearAllCache } from "./cache";
 
 export interface User {
   id: string;
@@ -110,6 +111,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     await clearTokens();
+    clearAllCache();
     set({
       user: null,
       organizations: [],

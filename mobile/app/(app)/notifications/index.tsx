@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
+import { useCachedFetch } from "@/hooks/useCachedFetch";
+import { cacheKeys } from "@/lib/cache";
 import { api } from "@/lib/api";
 import { Bell, Star, AlertTriangle, Mail } from "lucide-react-native";
 
@@ -24,53 +26,56 @@ interface Notification {
   created_at: string;
 }
 
+interface NotificationsData {
+  notifications: Notification[];
+  unreadCount: number;
+}
+
 export default function NotificationsScreen() {
   const colors = useColors();
   const activeOrg = useAuthStore((s) => s.activeOrg);
   const router = useRouter();
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!activeOrg) return;
-    try {
-      const result = await api<{
-        notifications: Notification[];
-        unreadCount: number;
-      }>(`/api/mobile/notifications?orgId=${activeOrg.id}`);
-      setNotifications(result.notifications);
-      setUnreadCount(result.unreadCount);
-    } catch (err) {
-      console.error("Notifications fetch error:", err);
+  const {
+    data: rawData,
+    loading,
+    refreshing,
+    onRefresh,
+  } = useCachedFetch<NotificationsData>(
+    `/api/mobile/notifications?orgId=${activeOrg?.id}`,
+    {
+      cacheKey: cacheKeys.notifications(activeOrg?.id ?? ""),
+      ttl: 2 * 60 * 1000, // 2 min TTL for notifications
+      skip: !activeOrg,
     }
-  }, [activeOrg?.id]);
+  );
 
-  useEffect(() => {
-    fetchNotifications().finally(() => setLoading(false));
-  }, [fetchNotifications]);
+  const [localReadIds, setLocalReadIds] = useState<Set<string>>(new Set());
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchNotifications();
-    setRefreshing(false);
-  }, [fetchNotifications]);
+  const notifications = (rawData?.notifications ?? []).map((n) =>
+    localReadIds.has(n.id) ? { ...n, read: true } : n
+  );
+  const unreadCount = Math.max(
+    0,
+    (rawData?.unreadCount ?? 0) - localReadIds.size
+  );
 
   async function handleMarkRead(id: string) {
-    try {
-      await api(`/api/mobile/notifications/${id}/read`, {
-        method: "PUT",
-        body: { read: true },
+    // Optimistic update
+    setLocalReadIds((prev) => new Set(prev).add(id));
+
+    // Fire and forget — rollback not needed for read status
+    api(`/api/mobile/notifications/${id}/read`, {
+      method: "PUT",
+      body: { read: true },
+    }).catch(() => {
+      // Revert optimistic update on failure
+      setLocalReadIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
       });
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-      );
-      setUnreadCount((c) => Math.max(0, c - 1));
-    } catch {
-      // silent
-    }
+    });
   }
 
   function handleNotificationPress(notification: Notification) {

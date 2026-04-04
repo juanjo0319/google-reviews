@@ -8,9 +8,11 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { api, ApiError } from "@/lib/api";
+import { setLanguage } from "@/i18n";
 import {
   User,
   Building2,
@@ -19,6 +21,7 @@ import {
   BarChart3,
   Users,
   CreditCard,
+  Globe,
   LogOut,
   ChevronRight,
   ExternalLink,
@@ -28,6 +31,22 @@ export default function SettingsScreen() {
   const colors = useColors();
   const { user, activeOrg, logout } = useAuthStore();
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+
+  function handleLanguageSwitch() {
+    const options = [
+      { label: "English", value: "en" },
+      { label: "Español", value: "es" },
+    ];
+    Alert.alert(
+      "Language / Idioma",
+      undefined,
+      options.map((opt) => ({
+        text: opt.label + (i18n.language === opt.value ? " ✓" : ""),
+        onPress: () => setLanguage(opt.value),
+      }))
+    );
+  }
 
   async function handleBilling(action: "checkout" | "portal") {
     if (!activeOrg) return;
@@ -120,6 +139,17 @@ export default function SettingsScreen() {
           subtitle: "View plan, invoices, payment method",
           onPress: () => handleBilling("portal"),
           external: true,
+        },
+      ],
+    },
+    {
+      title: "Preferences",
+      items: [
+        {
+          icon: Globe,
+          label: "Language",
+          subtitle: i18n.language === "es" ? "Español" : "English",
+          onPress: handleLanguageSwitch,
         },
       ],
     },
