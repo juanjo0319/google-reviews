@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { api, storeTokens, clearTokens, getStoredTokens, ApiError } from "./api";
+import { registerForPushNotifications, registerDeviceToken, unregisterDeviceToken } from "./notifications";
 
 export interface User {
   id: string;
@@ -98,6 +99,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    // Unregister push token before clearing auth
+    try {
+      const token = await registerForPushNotifications();
+      if (token) {
+        await unregisterDeviceToken(token);
+      }
+    } catch {
+      // Best-effort — don't block logout
+    }
+
     await clearTokens();
     set({
       user: null,

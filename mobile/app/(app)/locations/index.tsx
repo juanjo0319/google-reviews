@@ -12,7 +12,12 @@ import {
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
-import { MapPin, RefreshCw, Trash2 } from "lucide-react-native";
+import {
+  useGoogleBusinessAuth,
+  exchangeGoogleCode,
+  getGoogleRedirectUri,
+} from "@/lib/google-auth";
+import { MapPin, RefreshCw, Trash2, Link as LinkIcon } from "lucide-react-native";
 
 interface Location {
   id: string;
@@ -32,6 +37,34 @@ export default function LocationsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+
+  // Google OAuth
+  const [request, response, promptAsync] = useGoogleBusinessAuth();
+
+  // Handle Google OAuth response
+  useEffect(() => {
+    if (!response || response.type !== "success" || !activeOrg) return;
+
+    const code = response.params.code;
+    if (!code) return;
+
+    setConnecting(true);
+    const redirectUri = getGoogleRedirectUri();
+
+    exchangeGoogleCode(code, redirectUri, activeOrg.id)
+      .then(() => {
+        Alert.alert(
+          "Connected",
+          "Google Business Profile connected. Your locations will appear shortly.",
+          [{ text: "OK", onPress: () => fetchLocations() }]
+        );
+      })
+      .catch(() => {
+        Alert.alert("Error", "Failed to connect Google Business Profile");
+      })
+      .finally(() => setConnecting(false));
+  }, [response]);
 
   const fetchLocations = useCallback(async () => {
     if (!activeOrg) return;
@@ -183,6 +216,28 @@ export default function LocationsScreen() {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
+
+      ListHeaderComponent={
+        locations.length > 0 ? (
+          <TouchableOpacity
+            style={[
+              styles.connectButton,
+              { backgroundColor: colors.primaryLight },
+            ]}
+            onPress={() => promptAsync()}
+            disabled={!request || connecting}
+          >
+            {connecting ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <LinkIcon size={18} color={colors.primary} />
+            )}
+            <Text style={{ color: colors.primary, fontWeight: "600" }}>
+              Connect More Locations
+            </Text>
+          </TouchableOpacity>
+        ) : null
+      }
       ListEmptyComponent={
         <View style={styles.emptyState}>
           <MapPin size={48} color={colors.textSecondary} />
@@ -192,6 +247,25 @@ export default function LocationsScreen() {
           <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>
             Connect your Google Business Profile to start managing reviews.
           </Text>
+          <TouchableOpacity
+            style={[
+              styles.connectButtonLarge,
+              { backgroundColor: colors.primary },
+            ]}
+            onPress={() => promptAsync()}
+            disabled={!request || connecting}
+          >
+            {connecting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <LinkIcon size={20} color="#fff" />
+                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                  Connect Google Business
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
       }
     />
@@ -243,4 +317,23 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 18, fontWeight: "600" },
   emptyDesc: { fontSize: 14, textAlign: "center", maxWidth: 260 },
+  connectButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    height: 44,
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  connectButtonLarge: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    height: 52,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    marginTop: 8,
+  },
 });
