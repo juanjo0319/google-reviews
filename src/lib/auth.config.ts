@@ -94,7 +94,8 @@ export const authConfig = {
         publicPaths.includes(pathname) ||
         pathname.startsWith("/auth/") ||
         pathname.startsWith("/api/auth/") ||
-        pathname.startsWith("/api/webhooks/");
+        pathname.startsWith("/api/webhooks/") ||
+        pathname.startsWith("/api/mobile/");
 
       if (isPublicPath) return true;
 
