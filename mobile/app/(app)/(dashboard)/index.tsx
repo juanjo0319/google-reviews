@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { BarChart3, MessageCircle, ChevronRight } from "lucide-react-native";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { useCachedFetch } from "@/hooks/useCachedFetch";
 import { cacheKeys } from "@/lib/cache";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
 interface Stats {
   totalReviews: number;
@@ -42,7 +44,7 @@ export default function DashboardScreen() {
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
 
-  const { data, refreshing, onRefresh } = useCachedFetch<DashboardData>(
+  const { data, loading, refreshing, onRefresh } = useCachedFetch<DashboardData>(
     `/api/mobile/reviews/stats?orgId=${activeOrg?.id}`,
     {
       cacheKey: cacheKeys.dashboardStats(activeOrg?.id ?? ""),
@@ -52,6 +54,14 @@ export default function DashboardScreen() {
 
   function renderStars(rating: number) {
     return "★".repeat(rating) + "☆".repeat(5 - rating);
+  }
+
+  if (loading && !data) {
+    return (
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
+        <DashboardSkeleton />
+      </ScrollView>
+    );
   }
 
   return (
@@ -68,6 +78,26 @@ export default function DashboardScreen() {
         <Text style={[styles.orgName, { color: colors.textSecondary }]}>
           {activeOrg?.name}
         </Text>
+      </View>
+
+      {/* Quick Links */}
+      <View style={styles.quickLinks}>
+        <TouchableOpacity
+          style={[styles.quickLink, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          onPress={() => router.push("/(app)/(dashboard)/analytics" as never)}
+        >
+          <BarChart3 size={18} color={colors.primary} />
+          <Text style={[styles.quickLinkText, { color: colors.text }]}>Analytics</Text>
+          <ChevronRight size={16} color={colors.textSecondary} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickLink, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          onPress={() => router.push("/(app)/(dashboard)/responses" as never)}
+        >
+          <MessageCircle size={18} color={colors.primary} />
+          <Text style={[styles.quickLinkText, { color: colors.text }]}>Responses</Text>
+          <ChevronRight size={16} color={colors.textSecondary} />
+        </TouchableOpacity>
       </View>
 
       {/* Stat Cards */}
@@ -268,6 +298,23 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 12 },
   seeAll: { fontSize: 14, fontWeight: "600" },
+  quickLinks: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    gap: 10,
+    marginTop: 16,
+  },
+  quickLink: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  quickLinkText: { flex: 1, fontSize: 14, fontWeight: "600" },
   reviewCard: {
     borderWidth: 1,
     borderRadius: 12,

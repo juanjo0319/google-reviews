@@ -9,11 +9,13 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
+// ActivityIndicator kept for load-more footer
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
 import { Search, Filter, X } from "lucide-react-native";
+import { ListSkeleton } from "@/components/ui/Skeleton";
 
 interface Review {
   id: string;
@@ -249,11 +251,7 @@ export default function ReviewsListScreen() {
       </Text>
 
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color={colors.primary}
-          style={{ marginTop: 40 }}
-        />
+        <ListSkeleton count={6} />
       ) : (
         <FlatList
           data={reviews}

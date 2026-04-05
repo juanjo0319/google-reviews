@@ -14,6 +14,7 @@ import { useColors } from "@/hooks/useColors";
 import { useCachedFetch } from "@/hooks/useCachedFetch";
 import { cacheKeys } from "@/lib/cache";
 import { api } from "@/lib/api";
+import { LocationCardSkeleton } from "@/components/ui/Skeleton";
 import {
   useGoogleBusinessAuth,
   exchangeGoogleCode,
@@ -193,8 +194,12 @@ export default function LocationsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={[{ flex: 1, backgroundColor: colors.background, paddingTop: 8 }]}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <View key={i} style={{ paddingHorizontal: 16 }}>
+            <LocationCardSkeleton />
+          </View>
+        ))}
       </View>
     );
   }

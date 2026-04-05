@@ -96,4 +96,6 @@ export const cacheKeys = {
   notificationPrefs: (orgId: string) => `notification_prefs_${orgId}`,
   usage: (orgId: string) => `usage_${orgId}`,
   teamMembers: (orgId: string) => `team_${orgId}`,
+  analytics: (orgId: string) => `analytics_${orgId}`,
+  responses: (orgId: string, status: string) => `responses_${orgId}_${status}`,
 };

@@ -14,6 +14,7 @@ import { useColors } from "@/hooks/useColors";
 import { useCachedFetch } from "@/hooks/useCachedFetch";
 import { cacheKeys } from "@/lib/cache";
 import { api } from "@/lib/api";
+import { NotificationCardSkeleton } from "@/components/ui/Skeleton";
 import { Bell, Star, AlertTriangle, Mail } from "lucide-react-native";
 
 interface Notification {
@@ -157,8 +158,12 @@ export default function NotificationsScreen() {
 
   if (loading) {
     return (
-      <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={[{ flex: 1, backgroundColor: colors.background, paddingTop: 8 }]}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <View key={i} style={{ paddingHorizontal: 16 }}>
+            <NotificationCardSkeleton />
+          </View>
+        ))}
       </View>
     );
   }
