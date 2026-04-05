@@ -1,11 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import "@/i18n"; // Initialize i18n
 import type { EventSubscription } from "expo-modules-core";
-import { useColorScheme, ActivityIndicator, View } from "react-native";
+import { useColorScheme, AppState, View } from "react-native";
 import "react-native-reanimated";
 import { useAuthStore } from "@/lib/auth-store";
 import {
@@ -13,6 +13,14 @@ import {
   registerDeviceToken,
   getReviewIdFromNotification,
 } from "@/lib/notifications";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { OfflineBanner } from "@/components/ui/OfflineBanner";
+import {
+  isBiometricEnabled,
+  authenticateWithBiometric,
+  isBiometricAvailable,
+} from "@/lib/biometric";
+import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -25,6 +33,9 @@ export default function RootLayout() {
   const segments = useSegments();
   const notificationListener = useRef<EventSubscription>(null);
   const responseListener = useRef<EventSubscription>(null);
+  const { isConnected } = useNetworkStatus();
+  const [biometricLocked, setBiometricLocked] = useState(false);
+  const appState = useRef(AppState.currentState);
 
   // Load session on mount
   useEffect(() => {
@@ -37,6 +48,27 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [isLoading]);
+
+  // Biometric lock on app foreground
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", async (nextState) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextState === "active" &&
+        isAuthenticated
+      ) {
+        const available = await isBiometricAvailable();
+        if (available && isBiometricEnabled()) {
+          setBiometricLocked(true);
+          const success = await authenticateWithBiometric();
+          setBiometricLocked(!success);
+        }
+      }
+      appState.current = nextState;
+    });
+
+    return () => subscription.remove();
+  }, [isAuthenticated]);
 
   // Register push notifications when authenticated
   useEffect(() => {
@@ -51,7 +83,6 @@ export default function RootLayout() {
     // Listen for incoming notifications while app is foregrounded
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        // Could update badge count or show in-app toast here
         console.log("Notification received:", notification.request.content.title);
       });
 
@@ -101,21 +132,24 @@ export default function RootLayout() {
     });
   }, [isAuthenticated]);
 
-  if (isLoading) {
+  if (isLoading || biometricLocked) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#1a73e8" />
+      <View style={{ flex: 1, backgroundColor: colorScheme === "dark" ? "#151718" : "#F8F9FA" }}>
+        <DashboardSkeleton />
       </View>
     );
   }
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(app)" />
-        <Stack.Screen name="onboarding" />
-      </Stack>
+      <View style={{ flex: 1 }}>
+        {!isConnected && <OfflineBanner />}
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(app)" />
+          <Stack.Screen name="onboarding" />
+        </Stack>
+      </View>
     </ThemeProvider>
   );
 }

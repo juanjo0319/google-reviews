@@ -16,8 +16,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.reviewai.app",
+      "associatedDomains": [
+        "applinks:reviewai.app",
+        "applinks:*.reviewai.app"
+      ],
       "infoPlist": {
         "NSCameraUsageDescription": "ReviewAI needs camera access to scan QR codes.",
+        "NSFaceIDUsageDescription": "ReviewAI uses Face ID to protect your account.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -31,7 +36,13 @@
           "color": "#1a73e8"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow ReviewAI to use Face ID to unlock the app."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

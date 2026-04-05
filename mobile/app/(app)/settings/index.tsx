@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -5,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Switch,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -13,6 +15,13 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { api, ApiError } from "@/lib/api";
 import { setLanguage } from "@/i18n";
+import { notifyWarning } from "@/lib/haptics";
+import {
+  isBiometricAvailable,
+  getBiometricType,
+  isBiometricEnabled,
+  setBiometricEnabled,
+} from "@/lib/biometric";
 import {
   User,
   Building2,
@@ -21,6 +30,7 @@ import {
   BarChart3,
   Users,
   CreditCard,
+  Fingerprint,
   Globe,
   HelpCircle,
   LogOut,
@@ -33,6 +43,23 @@ export default function SettingsScreen() {
   const { user, activeOrg, logout } = useAuthStore();
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricLabel, setBiometricLabel] = useState("Biometric Lock");
+  const [biometricOn, setBiometricOn] = useState(isBiometricEnabled());
+
+  useEffect(() => {
+    isBiometricAvailable().then((available) => {
+      setBiometricAvailable(available);
+      if (available) {
+        getBiometricType().then((type) => setBiometricLabel(`${type} Lock`));
+      }
+    });
+  }, []);
+
+  function handleBiometricToggle(value: boolean) {
+    setBiometricOn(value);
+    setBiometricEnabled(value);
+  }
 
   function handleLanguageSwitch() {
     const options = [
@@ -73,6 +100,7 @@ export default function SettingsScreen() {
   }
 
   function handleLogout() {
+    notifyWarning();
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -152,6 +180,18 @@ export default function SettingsScreen() {
           subtitle: i18n.language === "es" ? "Español" : "English",
           onPress: handleLanguageSwitch,
         },
+        ...(biometricAvailable
+          ? [
+              {
+                icon: Fingerprint,
+                label: biometricLabel,
+                subtitle: "Require authentication to open app",
+                onPress: () => handleBiometricToggle(!biometricOn),
+                toggle: true,
+                toggleValue: biometricOn,
+              },
+            ]
+          : []),
         {
           icon: HelpCircle,
           label: "Help & Support",
@@ -205,7 +245,15 @@ export default function SettingsScreen() {
                     </Text>
                   )}
                 </View>
-                {"external" in item && item.external ? (
+                {"toggle" in item && item.toggle ? (
+                  <Switch
+                    value={item.toggleValue}
+                    onValueChange={(v) => {
+                      item.onPress();
+                    }}
+                    trackColor={{ true: colors.primary }}
+                  />
+                ) : "external" in item && item.external ? (
                   <ExternalLink size={16} color={colors.textSecondary} />
                 ) : (
                   <ChevronRight size={16} color={colors.textSecondary} />

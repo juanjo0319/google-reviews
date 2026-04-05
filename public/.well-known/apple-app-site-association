@@ -1,0 +1,28 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["YOUR_TEAM_ID.com.reviewai.app"],
+        "components": [
+          {
+            "/": "/dashboard/reviews/*",
+            "comment": "Open review detail in app"
+          },
+          {
+            "/": "/dashboard/responses",
+            "comment": "Open responses in app"
+          },
+          {
+            "/": "/dashboard/analytics",
+            "comment": "Open analytics in app"
+          },
+          {
+            "/": "/dashboard",
+            "comment": "Open dashboard in app"
+          }
+        ]
+      }
+    ]
+  }
+}

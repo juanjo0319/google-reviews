@@ -14,6 +14,8 @@ import { useColors } from "@/hooks/useColors";
 import { useCachedFetch } from "@/hooks/useCachedFetch";
 import { cacheKeys } from "@/lib/cache";
 import { api } from "@/lib/api";
+import { enqueueAction } from "@/lib/offline-queue";
+import { tapLight } from "@/lib/haptics";
 import { NotificationCardSkeleton } from "@/components/ui/Skeleton";
 import { Bell, Star, AlertTriangle, Mail } from "lucide-react-native";
 
@@ -64,17 +66,18 @@ export default function NotificationsScreen() {
   async function handleMarkRead(id: string) {
     // Optimistic update
     setLocalReadIds((prev) => new Set(prev).add(id));
+    tapLight();
 
-    // Fire and forget — rollback not needed for read status
+    // Fire and forget — queue offline if needed
     api(`/api/mobile/notifications/${id}/read`, {
       method: "PUT",
       body: { read: true },
     }).catch(() => {
-      // Revert optimistic update on failure
-      setLocalReadIds((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
+      // Queue for retry when back online
+      enqueueAction({
+        path: `/api/mobile/notifications/${id}/read`,
+        method: "PUT",
+        body: { read: true },
       });
     });
   }

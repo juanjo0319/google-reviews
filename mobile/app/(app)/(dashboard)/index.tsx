@@ -12,6 +12,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { useCachedFetch } from "@/hooks/useCachedFetch";
 import { cacheKeys } from "@/lib/cache";
+import { tapMedium } from "@/lib/haptics";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
 interface Stats {
@@ -44,13 +45,18 @@ export default function DashboardScreen() {
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
 
-  const { data, loading, refreshing, onRefresh } = useCachedFetch<DashboardData>(
+  const { data, loading, refreshing, onRefresh: _onRefresh } = useCachedFetch<DashboardData>(
     `/api/mobile/reviews/stats?orgId=${activeOrg?.id}`,
     {
       cacheKey: cacheKeys.dashboardStats(activeOrg?.id ?? ""),
       skip: !activeOrg,
     }
   );
+
+  async function onRefresh() {
+    await _onRefresh();
+    tapMedium();
+  }
 
   function renderStars(rating: number) {
     return "★".repeat(rating) + "☆".repeat(5 - rating);
