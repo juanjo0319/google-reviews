@@ -1,11 +1,14 @@
 import { Tabs } from "expo-router";
+import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Star, MapPin, Bell, Settings } from "lucide-react-native";
 import { useColors } from "@/hooks/useColors";
+import { useBadgeStore } from "@/lib/notification-badge";
 
 export default function AppLayout() {
   const colors = useColors();
   const { t } = useTranslation();
+  const unreadCount = useBadgeStore((s) => s.unreadCount);
 
   return (
     <Tabs
@@ -51,7 +54,21 @@ export default function AppLayout() {
         name="notifications"
         options={{
           title: t("dashboard.notifications.title"),
-          tabBarIcon: ({ color, size }) => <Bell size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <View>
+              <Bell size={size} color={color} />
+              {unreadCount > 0 && (
+                <View
+                  style={[styles.badge, { backgroundColor: colors.danger }]}
+                  accessibilityLabel={`${unreadCount} unread notifications`}
+                >
+                  <Text style={styles.badgeText}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </View>
+          ),
           headerShown: false,
         }}
       />
@@ -66,3 +83,22 @@ export default function AppLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -8,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "700",
+  },
+});

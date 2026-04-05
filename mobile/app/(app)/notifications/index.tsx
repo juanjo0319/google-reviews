@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,9 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { useCachedFetch } from "@/hooks/useCachedFetch";
@@ -16,8 +16,11 @@ import { cacheKeys } from "@/lib/cache";
 import { api } from "@/lib/api";
 import { enqueueAction } from "@/lib/offline-queue";
 import { tapLight } from "@/lib/haptics";
+import { useBadgeStore } from "@/lib/notification-badge";
 import { NotificationCardSkeleton } from "@/components/ui/Skeleton";
-import { Bell, Star, AlertTriangle, Mail } from "lucide-react-native";
+import { SwipeableRow } from "@/components/ui/SwipeableRow";
+import { AnimatedCard } from "@/components/ui/AnimatedCard";
+import { Bell, Star, AlertTriangle, Mail, CheckCheck } from "lucide-react-native";
 
 interface Notification {
   id: string;
@@ -38,6 +41,8 @@ export default function NotificationsScreen() {
   const colors = useColors();
   const activeOrg = useAuthStore((s) => s.activeOrg);
   const router = useRouter();
+  const setUnreadCount = useBadgeStore((s) => s.setUnreadCount);
+  const decrementBadge = useBadgeStore((s) => s.decrement);
 
   const {
     data: rawData,
@@ -48,12 +53,20 @@ export default function NotificationsScreen() {
     `/api/mobile/notifications?orgId=${activeOrg?.id}`,
     {
       cacheKey: cacheKeys.notifications(activeOrg?.id ?? ""),
-      ttl: 2 * 60 * 1000, // 2 min TTL for notifications
+      ttl: 2 * 60 * 1000,
       skip: !activeOrg,
     }
   );
 
   const [localReadIds, setLocalReadIds] = useState<Set<string>>(new Set());
+
+  // Sync badge count when data changes
+  useEffect(() => {
+    if (rawData) {
+      const adjustedCount = Math.max(0, rawData.unreadCount - localReadIds.size);
+      setUnreadCount(adjustedCount);
+    }
+  }, [rawData, localReadIds.size, setUnreadCount]);
 
   const notifications = (rawData?.notifications ?? []).map((n) =>
     localReadIds.has(n.id) ? { ...n, read: true } : n
@@ -64,16 +77,14 @@ export default function NotificationsScreen() {
   );
 
   async function handleMarkRead(id: string) {
-    // Optimistic update
     setLocalReadIds((prev) => new Set(prev).add(id));
     tapLight();
+    decrementBadge();
 
-    // Fire and forget — queue offline if needed
     api(`/api/mobile/notifications/${id}/read`, {
       method: "PUT",
       body: { read: true },
     }).catch(() => {
-      // Queue for retry when back online
       enqueueAction({
         path: `/api/mobile/notifications/${id}/read`,
         method: "PUT",
@@ -86,7 +97,6 @@ export default function NotificationsScreen() {
     if (!notification.read) {
       handleMarkRead(notification.id);
     }
-    // Navigate to review if notification has a review ID
     const reviewId =
       notification.data?.reviewId ?? notification.data?.review_id;
     if (reviewId && typeof reviewId === "string") {
@@ -110,54 +120,78 @@ export default function NotificationsScreen() {
   function timeAgo(dateStr: string) {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m`;
+    if (mins < 60) return `${mins}m ago`;
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h`;
+    if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
-    return `${days}d`;
+    return `${days}d ago`;
   }
 
-  const renderNotification = ({ item }: { item: Notification }) => {
-    const Icon = getIcon(item.type);
-    return (
-      <TouchableOpacity
-        style={[
-          styles.card,
-          {
-            backgroundColor: item.read ? colors.surface : colors.primaryLight,
-            borderColor: colors.border,
-          },
-        ]}
-        onPress={() => handleNotificationPress(item)}
-      >
-        <View style={styles.iconContainer}>
-          <Icon
-            size={20}
-            color={item.type === "negative_review" ? colors.danger : colors.primary}
-          />
-        </View>
-        <View style={styles.content}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {item.title}
-          </Text>
-          {item.message && (
-            <Text
-              style={[styles.message, { color: colors.textSecondary }]}
-              numberOfLines={2}
+  const renderNotification = useCallback(
+    ({ item, index }: { item: Notification; index: number }) => {
+      const Icon = getIcon(item.type);
+      const swipeActions = !item.read
+        ? [
+            {
+              label: "Read",
+              icon: CheckCheck,
+              color: colors.success,
+              onPress: () => handleMarkRead(item.id),
+            },
+          ]
+        : [];
+
+      return (
+        <AnimatedCard index={index}>
+          <SwipeableRow rightActions={swipeActions}>
+            <TouchableOpacity
+              style={[
+                styles.card,
+                {
+                  backgroundColor: item.read ? colors.surface : colors.primaryLight,
+                  borderColor: colors.border,
+                },
+              ]}
+              onPress={() => handleNotificationPress(item)}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.title}. ${item.message ?? ""}. ${item.read ? "Read" : "Unread"}. ${timeAgo(item.created_at)}`}
+              accessibilityHint={item.read ? undefined : "Double tap to open and mark as read"}
             >
-              {item.message}
-            </Text>
-          )}
-          <Text style={[styles.time, { color: colors.textSecondary }]}>
-            {timeAgo(item.created_at)}
-          </Text>
-        </View>
-        {!item.read && (
-          <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
-        )}
-      </TouchableOpacity>
-    );
-  };
+              <View style={styles.iconContainer} accessibilityElementsHidden>
+                <Icon
+                  size={20}
+                  color={item.type === "negative_review" ? colors.danger : colors.primary}
+                />
+              </View>
+              <View style={styles.content}>
+                <Text style={[styles.title, { color: colors.text }]}>
+                  {item.title}
+                </Text>
+                {item.message && (
+                  <Text
+                    style={[styles.message, { color: colors.textSecondary }]}
+                    numberOfLines={2}
+                  >
+                    {item.message}
+                  </Text>
+                )}
+                <Text style={[styles.time, { color: colors.textSecondary }]}>
+                  {timeAgo(item.created_at)}
+                </Text>
+              </View>
+              {!item.read && (
+                <View
+                  style={[styles.unreadDot, { backgroundColor: colors.primary }]}
+                  accessibilityElementsHidden
+                />
+              )}
+            </TouchableOpacity>
+          </SwipeableRow>
+        </AnimatedCard>
+      );
+    },
+    [colors, localReadIds]
+  );
 
   if (loading) {
     return (
@@ -172,39 +206,43 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <FlatList
-      data={notifications}
-      keyExtractor={(item) => item.id}
-      renderItem={renderNotification}
-      contentContainerStyle={styles.list}
-      style={{ backgroundColor: colors.background }}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      ListHeaderComponent={
-        unreadCount > 0 ? (
-          <Text style={[styles.headerText, { color: colors.textSecondary }]}>
-            {unreadCount} unread
-          </Text>
-        ) : null
-      }
-      ListEmptyComponent={
-        <View style={styles.emptyState}>
-          <Bell size={48} color={colors.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: colors.text }]}>
-            All caught up
-          </Text>
-          <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>
-            You'll see new review alerts and updates here.
-          </Text>
-        </View>
-      }
-    />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <FlatList
+        data={notifications}
+        keyExtractor={(item) => item.id}
+        renderItem={renderNotification}
+        contentContainerStyle={styles.list}
+        style={{ backgroundColor: colors.background }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListHeaderComponent={
+          unreadCount > 0 ? (
+            <Text
+              style={[styles.headerText, { color: colors.textSecondary }]}
+              accessibilityRole="header"
+            >
+              {unreadCount} unread
+            </Text>
+          ) : null
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyState} accessibilityRole="text">
+            <Bell size={48} color={colors.textSecondary} />
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
+              All caught up
+            </Text>
+            <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>
+              You'll see new review alerts and updates here.
+            </Text>
+          </View>
+        }
+      />
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   list: { padding: 16, paddingBottom: 32 },
   headerText: { fontSize: 13, marginBottom: 8, fontWeight: "500" },
   card: {

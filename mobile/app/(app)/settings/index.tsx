@@ -228,6 +228,9 @@ export default function SettingsScreen() {
                   },
                 ]}
                 onPress={item.onPress}
+                accessibilityRole={"toggle" in item && item.toggle ? "switch" : "button"}
+                accessibilityLabel={`${item.label}${item.subtitle ? `. ${item.subtitle}` : ""}`}
+                accessibilityState={"toggle" in item && item.toggle ? { checked: item.toggleValue } : undefined}
               >
                 <item.icon size={20} color={colors.primary} />
                 <View style={styles.rowContent}>

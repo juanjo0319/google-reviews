@@ -9,13 +9,15 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-// ActivityIndicator kept for load-more footer
 import { useRouter } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useAuthStore } from "@/lib/auth-store";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
-import { Search, Filter, X } from "lucide-react-native";
+import { Search, Filter, X, Bot } from "lucide-react-native";
 import { ListSkeleton } from "@/components/ui/Skeleton";
+import { SwipeableRow } from "@/components/ui/SwipeableRow";
+import { AnimatedCard } from "@/components/ui/AnimatedCard";
 
 interface Review {
   id: string;
@@ -99,75 +101,94 @@ export default function ReviewsListScreen() {
     return "★".repeat(rating) + "☆".repeat(5 - rating);
   }
 
-  const renderReview = ({ item }: { item: Review }) => (
-    <TouchableOpacity
-      style={[styles.reviewCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      onPress={() => router.push(`/(app)/reviews/${item.id}` as never)}
-    >
-      <View style={styles.reviewHeader}>
-        <Text style={[styles.reviewerName, { color: colors.text }]}>
-          {item.reviewer_name ?? "Anonymous"}
-        </Text>
-        <Text style={{ color: colors.star, fontSize: 13 }}>
-          {renderStars(item.star_rating)}
-        </Text>
-      </View>
-      {item.comment && (
-        <Text
-          style={[styles.reviewComment, { color: colors.textSecondary }]}
-          numberOfLines={3}
-        >
-          {item.comment}
-        </Text>
-      )}
-      <View style={styles.reviewFooter}>
-        {item.sentiment && (
-          <View
-            style={[
-              styles.badge,
-              {
-                backgroundColor:
-                  (item.sentiment === "positive"
-                    ? colors.sentimentPositive
-                    : item.sentiment === "negative"
-                      ? colors.sentimentNegative
-                      : colors.sentimentNeutral) + "20",
-              },
-            ]}
+  const renderReview = ({ item, index }: { item: Review; index: number }) => {
+    const swipeActions = !item.responseStatus
+      ? [
+          {
+            label: "AI Reply",
+            icon: Bot,
+            color: colors.primary,
+            onPress: () => router.push(`/(app)/reviews/${item.id}` as never),
+          },
+        ]
+      : [];
+
+    return (
+      <AnimatedCard index={index}>
+        <SwipeableRow rightActions={swipeActions}>
+          <TouchableOpacity
+            style={[styles.reviewCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            onPress={() => router.push(`/(app)/reviews/${item.id}` as never)}
+            accessibilityRole="button"
+            accessibilityLabel={`${item.reviewer_name ?? "Anonymous"}, ${item.star_rating} stars. ${item.comment ?? "No comment"}. ${item.sentiment ?? ""}`}
           >
-            <Text
-              style={{
-                fontSize: 11,
-                fontWeight: "500",
-                color:
-                  item.sentiment === "positive"
-                    ? colors.sentimentPositive
-                    : item.sentiment === "negative"
-                      ? colors.sentimentNegative
-                      : colors.sentimentNeutral,
-                textTransform: "capitalize",
-              }}
-            >
-              {item.sentiment}
-            </Text>
-          </View>
-        )}
-        {item.locations && (
-          <Text style={[styles.locationName, { color: colors.textSecondary }]}>
-            {item.locations.name}
-          </Text>
-        )}
-        {item.responseStatus && (
-          <Text style={[styles.statusText, { color: colors.primary }]}>
-            {item.responseStatus}
-          </Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+            <View style={styles.reviewHeader}>
+              <Text style={[styles.reviewerName, { color: colors.text }]}>
+                {item.reviewer_name ?? "Anonymous"}
+              </Text>
+              <Text style={{ color: colors.star, fontSize: 13 }} accessibilityLabel={`${item.star_rating} stars`}>
+                {renderStars(item.star_rating)}
+              </Text>
+            </View>
+            {item.comment && (
+              <Text
+                style={[styles.reviewComment, { color: colors.textSecondary }]}
+                numberOfLines={3}
+              >
+                {item.comment}
+              </Text>
+            )}
+            <View style={styles.reviewFooter}>
+              {item.sentiment && (
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      backgroundColor:
+                        (item.sentiment === "positive"
+                          ? colors.sentimentPositive
+                          : item.sentiment === "negative"
+                            ? colors.sentimentNegative
+                            : colors.sentimentNeutral) + "20",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "500",
+                      color:
+                        item.sentiment === "positive"
+                          ? colors.sentimentPositive
+                          : item.sentiment === "negative"
+                            ? colors.sentimentNegative
+                            : colors.sentimentNeutral,
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {item.sentiment}
+                  </Text>
+                </View>
+              )}
+              {item.locations && (
+                <Text style={[styles.locationName, { color: colors.textSecondary }]}>
+                  {item.locations.name}
+                </Text>
+              )}
+              {item.responseStatus && (
+                <Text style={[styles.statusText, { color: colors.primary }]}>
+                  {item.responseStatus}
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        </SwipeableRow>
+      </AnimatedCard>
+    );
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <GestureHandlerRootView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Search bar */}
       <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Search size={18} color={colors.textSecondary} />
@@ -178,6 +199,8 @@ export default function ReviewsListScreen() {
           value={search}
           onChangeText={setSearch}
           returnKeyType="search"
+          accessibilityLabel="Search reviews"
+          accessibilityHint="Type to filter reviews by keyword"
         />
         <TouchableOpacity onPress={() => setShowFilters(!showFilters)}>
           <Filter size={18} color={showFilters ? colors.primary : colors.textSecondary} />
@@ -280,7 +303,7 @@ export default function ReviewsListScreen() {
           }
         />
       )}
-    </View>
+    </GestureHandlerRootView>
   );
 }
 

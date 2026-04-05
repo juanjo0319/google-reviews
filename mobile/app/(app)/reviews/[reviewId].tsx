@@ -14,6 +14,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { api, apiStream } from "@/lib/api";
 import { notifySuccess, notifyWarning } from "@/lib/haptics";
+import { trackPublishAndMaybePrompt } from "@/lib/store-review";
 import { Sparkles, Send, Check, X, Edit3, Trash2 } from "lucide-react-native";
 
 interface ReviewDetail {
@@ -128,7 +129,10 @@ export default function ReviewDetailScreen() {
           body: { action, content },
         }
       );
-      if (action === "approve" || action === "publish") {
+      if (action === "publish") {
+        notifySuccess();
+        trackPublishAndMaybePrompt();
+      } else if (action === "approve") {
         notifySuccess();
       } else if (action === "reject") {
         notifyWarning();

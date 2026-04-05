@@ -233,8 +233,16 @@ function StatCard({
   icon?: string;
   colors: ReturnType<typeof useColors>;
 }) {
+  const trendText = trend !== undefined && trend !== 0
+    ? `${trend > 0 ? "up" : "down"} ${Math.abs(trend)}% this month`
+    : "";
+
   return (
-    <View style={[statStyles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+    <View
+      style={[statStyles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      accessibilityRole="text"
+      accessibilityLabel={`${label}: ${value}${trendText ? `. ${trendText}` : ""}`}
+    >
       <Text style={[statStyles.label, { color: colors.textSecondary }]}>
         {label}
       </Text>
