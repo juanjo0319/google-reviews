@@ -11,9 +11,14 @@ export const dynamic = "force-dynamic";
  * Exchanges the auth code for tokens and stores them in google_oauth_tokens.
  */
 export async function GET(request: NextRequest) {
+  const baseUrl =
+    process.env.NEXTAUTH_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "http://localhost:3000";
+
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login", baseUrl));
   }
 
   const code = request.nextUrl.searchParams.get("code");
@@ -23,16 +28,13 @@ export async function GET(request: NextRequest) {
   if (error) {
     console.error("Google OAuth error:", error);
     return NextResponse.redirect(
-      new URL(
-        "/dashboard/settings?error=google_oauth_denied",
-        request.url
-      )
+      new URL("/dashboard/settings?error=google_oauth_denied", baseUrl)
     );
   }
 
   if (!code || !state) {
     return NextResponse.redirect(
-      new URL("/dashboard/settings?error=invalid_callback", request.url)
+      new URL("/dashboard/settings?error=invalid_callback", baseUrl)
     );
   }
 
@@ -43,15 +45,9 @@ export async function GET(request: NextRequest) {
 
   if (state !== savedState) {
     return NextResponse.redirect(
-      new URL("/dashboard/settings?error=invalid_state", request.url)
+      new URL("/dashboard/settings?error=invalid_state", baseUrl)
     );
   }
-
-  // Exchange code for tokens
-  const baseUrl =
-    process.env.NEXTAUTH_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000";
 
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -93,32 +89,34 @@ export async function GET(request: NextRequest) {
 
   if (!orgId) {
     return NextResponse.redirect(
-      new URL("/dashboard/settings?error=no_organization", request.url)
+      new URL("/dashboard/settings?error=no_organization", baseUrl)
     );
   }
 
-  // Store tokens
+  // Store tokens (replace any existing tokens for this org)
   const supabase = createAdminClient();
+  await supabase
+    .from("google_oauth_tokens")
+    .delete()
+    .eq("organization_id", orgId);
+
   const { error: upsertError } = await supabase
     .from("google_oauth_tokens")
-    .upsert(
-      {
-        organization_id: orgId,
-        user_id: session.user.id,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_at: new Date(
-          Date.now() + tokens.expires_in * 1000
-        ).toISOString(),
-        scope: tokens.scope ?? null,
-      },
-      { onConflict: "id" }
-    );
+    .insert({
+      organization_id: orgId,
+      user_id: session.user.id,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: new Date(
+        Date.now() + tokens.expires_in * 1000
+      ).toISOString(),
+      scope: tokens.scope ?? null,
+    });
 
   if (upsertError) {
     console.error("Error storing tokens:", upsertError);
     return NextResponse.redirect(
-      new URL("/dashboard/settings?error=token_storage_failed", request.url)
+      new URL("/dashboard/settings?error=token_storage_failed", baseUrl)
     );
   }
 
@@ -128,5 +126,5 @@ export async function GET(request: NextRequest) {
     ? "/dashboard/onboarding?google=connected"
     : "/dashboard/settings/locations";
 
-  return NextResponse.redirect(new URL(redirectTo, request.url));
+  return NextResponse.redirect(new URL(redirectTo, baseUrl));
 }
